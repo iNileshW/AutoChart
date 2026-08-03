@@ -8,15 +8,18 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.116.1",
     "geodatasets>=2026.5.1",
     "geopandas>=1.1.4",
     "matplotlib>=3.11.1",
     "pandas>=3.0.5",
     "ruff>=0.16.1",
+    "uvicorn>=0.35.0",
 ]
 
 [project.scripts]
-autochart = "autochart:main"
+autochart = "autochart.cli:main"
+autochart-api = "autochart.backend_runner:main"
 
 [build-system]
 requires = ["uv_build>=0.12.0,<0.13.0"]
