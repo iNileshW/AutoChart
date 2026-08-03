@@ -12,3 +12,4 @@ wheels/
 # Local original shapefiles (keep out of repo)
 data_original/
 practice.ipynb
+*.geojson
