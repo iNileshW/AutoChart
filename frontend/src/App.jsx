@@ -173,10 +173,10 @@ function MapView() {
                   data={data.old}
                   style={() => ({ color: "#1e3a8a", weight: 1, fillOpacity: 0.1 })}
                   onEachFeature={(feature, layer) => {
-                    const p = feature.properties || {};
-                    layer.bindPopup(
-                      `<b>Old</b><br/>PANEL_IDEN: ${p.PANEL_IDEN ?? ""}<br/>PANEL_MAIN: ${p.PANEL_MAIN ?? ""}<br/>SCALE: ${p.SCALE ?? ""}`,
-                    );
+const p = feature.properties || {};
+const el = document.createElement("pre");
+el.textContent = `Old\nPANEL_IDEN: ${p.PANEL_IDEN ?? ""}\nPANEL_MAIN: ${p.PANEL_MAIN ?? ""}\nSCALE: ${p.SCALE ?? ""}`;
+layer.bindPopup(el);
                   }}
                 />
               </LayersControl.Overlay>
