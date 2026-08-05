@@ -149,8 +149,8 @@ def mcp_jsonrpc(request: JsonRpcRequest) -> dict[str, Any] | Response:
             result = _call_tool(name, args)
         except ValueError as e:
             return _error(request.id, -32602, str(e))
-        except Exception as e:
-            return _error(request.id, -32000, f"Tool execution failed: {e}")
+        except Exception:
+            return _error(request.id, -32000, "Tool execution failed")
         return {"jsonrpc": "2.0", "id": request.id, "result": result}
 
     return _error(request.id, -32601, f"Method not found: {request.method}")
