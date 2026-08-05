@@ -15,13 +15,16 @@
         var flag = "__autochart_sw_cleared__";
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           if (!regs || regs.length === 0) return;
-Promise.all(regs.map(function (r) { return r.unregister(); }))
-  .then(function () {
-    if (!sessionStorage.getItem(flag)) {
-      sessionStorage.setItem(flag, "1");
-      location.reload();
-    }
-  });
+          Promise.all(
+            regs.map(function (r) {
+              return r.unregister();
+            }),
+          ).then(function () {
+            if (!sessionStorage.getItem(flag)) {
+              sessionStorage.setItem(flag, "1");
+              location.reload();
+            }
+          });
         });
       })();
     </script>

@@ -4,7 +4,8 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from autochart.backend.api.routes import router as api_router
@@ -13,7 +14,19 @@ from autochart.backend.mcp_server import router as mcp_router
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
 
-app = FastAPI(title="AutoChart Backend", version="0.1.0")
+app = FastAPI(
+    title="AutoChart Backend",
+    version="0.1.0",
+    docs_url=None,
+    redoc_url=None,
+)
+
+
+@app.get("/docs", include_in_schema=False, response_model=None)
+def swagger_ui() -> HTMLResponse:
+    # Use a relative openapi URL so /docs works both directly and through a
+    # path-stripping reverse proxy (e.g. /proxy/8000/docs).
+    return get_swagger_ui_html(openapi_url="openapi.json", title="AutoChart Backend — docs")
 
 app.add_middleware(
     CORSMiddleware,

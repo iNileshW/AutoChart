@@ -173,10 +173,10 @@ function MapView() {
                   data={data.old}
                   style={() => ({ color: "#1e3a8a", weight: 1, fillOpacity: 0.1 })}
                   onEachFeature={(feature, layer) => {
-const p = feature.properties || {};
-const el = document.createElement("pre");
-el.textContent = `Old\nPANEL_IDEN: ${p.PANEL_IDEN ?? ""}\nPANEL_MAIN: ${p.PANEL_MAIN ?? ""}\nSCALE: ${p.SCALE ?? ""}`;
-layer.bindPopup(el);
+                    const p = feature.properties || {};
+                    const el = document.createElement("pre");
+                    el.textContent = `Old\nPANEL_IDEN: ${p.PANEL_IDEN ?? ""}\nPANEL_MAIN: ${p.PANEL_MAIN ?? ""}\nSCALE: ${p.SCALE ?? ""}`;
+                    layer.bindPopup(el);
                   }}
                 />
               </LayersControl.Overlay>
@@ -208,11 +208,12 @@ function OverlapView() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-fetch(`api/panels?max_scale=${MAX_SCALE}`)
-  .then((r) => {
-    if (!r.ok) throw new Error(`API error: ${r.status}`);
-    return r.json();
-  })
+    fetch(`api/panels?max_scale=${MAX_SCALE}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      })
+      .then((list) => {
         setPanels(list);
         if (list.length > 0) setSelected(list[0].panel_main);
       })
@@ -266,8 +267,18 @@ fetch(`api/panels?max_scale=${MAX_SCALE}`)
             alt={`Overlap for ${result.panel_main}`}
           />
           <ul>
-            <li>Old area: {result.metrics.old_area_m2.toLocaleString(undefined, { maximumFractionDigits: 0 })} m²</li>
-            <li>Overlap area: {result.metrics.new_overlap_area_m2.toLocaleString(undefined, { maximumFractionDigits: 0 })} m²</li>
+            <li>
+              Old area:{" "}
+              {result.metrics.old_area_m2.toLocaleString(undefined, { maximumFractionDigits: 0 })}{" "}
+              m²
+            </li>
+            <li>
+              Overlap area:{" "}
+              {result.metrics.new_overlap_area_m2.toLocaleString(undefined, {
+                maximumFractionDigits: 0,
+              })}{" "}
+              m²
+            </li>
             <li>Overlap % of old: {result.metrics.overlap_pct_old.toFixed(2)}%</li>
             <li>Intersecting new polygons: {result.metrics.new_polygons_intersecting}</li>
           </ul>
