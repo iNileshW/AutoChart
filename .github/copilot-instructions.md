@@ -6,7 +6,7 @@ AutoChart is a chatbot application designed to help UHO customers determine whet
 
 ## Problem Statement
 
-UHO customers currently lack a tool to determine if updates exist for their owned geospatial navigation paper charts. This project addresses that gap by providing automated comparison and upgrade recommendations.
+UKHO customers currently lack a tool to determine if updates exist for their owned geospatial navigation paper charts. This project addresses that gap by providing automated comparison and upgrade recommendations.
 
 ## Technology Stack
 

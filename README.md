@@ -1,19 +1,54 @@
-# Project Overview
+# AutoChart
 
-This project is compare old chart with new chart.
-If there is change in polygon then new chart should be suggested to customer for upgrade. 
+AutoChart compares old and new geospatial navigation chart polygons and helps identify upgrade recommendations for customers.
 
-# Problem Statement
+## Architecture
 
-Currently UHO customers have no tool to determine whether there has been any update to currently owned Geo spatial navigation paper charts. 
+- Frontend: React + Vite in `frontend/`
+- Backend API: FastAPI in `src/autochart/backend/`
+- MCP endpoint: JSON-RPC style endpoint served by the same FastAPI app at `/mcp`
 
-# Website:
+## Tech Stack
 
+- Python (UV-managed project)
+- FastAPI + Uvicorn
+- Geopandas + Pandas
+- React + Vite
+- QGIS (validation and visualization)
 
-# Tech stack
+## Backend Endpoints
 
-- UV python
-- Geopandas Pandas library
-- Jupyter notebook
-- Python
-- QGIS 
+- `GET /` : service status
+- `GET /api/health` : API health check
+- `POST /api/chat` : starter chatbot endpoint
+- `POST /mcp` : MCP-compatible JSON-RPC starter endpoint
+
+## Run Locally
+
+### 1. Start backend
+
+From the repository root:
+
+```powershell
+uv sync
+uv run autochart-api
+```
+
+Backend runs on `http://localhost:8000`.
+
+### 2. Start frontend
+
+From `frontend/`:
+
+```powershell
+npm install
+npm run dev
+```
+
+Frontend runs on `http://localhost:5173` and proxies `/api` and `/mcp` to the backend.
+
+## Notes
+
+- Keep shapefile sidecar files together (`.shp`, `.dbf`, `.shx`, `.prj`, etc.).
+- Add chart comparison logic to the backend and replace the placeholder `/api/chat` implementation.
+- Expand `/mcp` handlers with your MCP tools and methods.
