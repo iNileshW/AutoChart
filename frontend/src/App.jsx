@@ -11,7 +11,7 @@ const LOOKUP_MODES = [
 
 const MAX_SCALE = 30000;
 
-function ChatBot() {
+export function ChatBot() {
   const [mode, setMode] = useState("chart_name");
   const [value, setValue] = useState("Looe");
   const [reply, setReply] = useState("Ask about a chart.");
@@ -101,7 +101,7 @@ function ChatBot() {
   );
 }
 
-function MapView() {
+export function MapView() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
@@ -200,7 +200,7 @@ function MapView() {
   );
 }
 
-function OverlapView() {
+export function OverlapView() {
   const [panels, setPanels] = useState([]);
   const [selected, setSelected] = useState("");
   const [result, setResult] = useState(null);

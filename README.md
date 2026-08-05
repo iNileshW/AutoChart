@@ -112,6 +112,19 @@ npm run format:check  # Prettier check
 
 ESLint uses the flat config in `frontend/eslint.config.js` with React, React Hooks, and React Refresh rules; `eslint-config-prettier` disables stylistic rules that overlap with Prettier. Prettier config lives in `frontend/.prettierrc.json`.
 
+## Frontend tests
+
+```bash
+cd frontend
+npm test              # Vitest one-shot
+npm run test:watch    # Vitest watch mode
+```
+
+Vitest runs under jsdom with React Testing Library. Test files live in `frontend/src/test/`:
+- `ChatBot.test.jsx` — form + fetch + reply rendering + error handling
+- `OverlapView.test.jsx` — panel loading, overlap request, PNG + metrics render
+- `MapView.test.jsx` — loading/error states + GeoJSON layer counts (react-leaflet is mocked so tests run without a canvas-capable DOM)
+
 Test coverage:
 - `tests/test_data.py` — lookup semantics per mode, scale filter, GeoJSON shape
 - `tests/test_overlap.py` — `plot_panel_overlap` PNG magic bytes + metrics
