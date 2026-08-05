@@ -160,6 +160,34 @@ This file tracks code and configuration changes made by AI in this repository.
 - The reverse proxy (`.../proxy/<port>/`) strips its prefix; all client-facing URLs must be path-relative and the URL must have a trailing slash.
 - FastAPI's `/docs` was replaced with a custom route because the default Swagger UI hardcodes an absolute `/openapi.json`.
 
+## 2026-08-05 (Frontend tests)
+
+### Summary
+- Added Vitest + React Testing Library to the frontend and wrote component tests for the three main views.
+
+### Added Files
+- frontend/src/test/setup.js — imports jest-dom matchers, cleans up between tests.
+- frontend/src/test/ChatBot.test.jsx — 4 tests (render, POST body, API error, blank-value disable).
+- frontend/src/test/OverlapView.test.jsx — 3 tests (panel dropdown, overlap request + PNG render, error surface).
+- frontend/src/test/MapView.test.jsx — 3 tests (loading state, GeoJSON layer counts, error banner); mocks `react-leaflet` so tests run without a canvas-capable DOM.
+
+### Updated Files
+- frontend/vite.config.js — Vitest `test` block: `jsdom` env, `globals: true`, `setupFiles`, `css: false`.
+- frontend/package.json — added dev deps `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`; new scripts `test` and `test:watch`.
+- frontend/package-lock.json — refreshed lockfile.
+- frontend/src/App.jsx — exported `ChatBot`, `MapView`, `OverlapView` as named exports so tests can render them in isolation.
+- frontend/eslint.config.js — override block for test files (relaxes `react/display-name`, `react-refresh/only-export-components`, `no-undef`).
+- README.md — new "Frontend tests" section documenting the Vitest commands and coverage.
+
+### Validation
+- `npm test` → 10 passed (3 files).
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+
+### Notes
+- Full react-leaflet render fails under jsdom (no canvas). Tests mock it via `vi.mock("react-leaflet", ...)` and assert on the passthrough elements plus data attributes.
+
 ## Ongoing Tracking Format
 Use this format for future entries:
 

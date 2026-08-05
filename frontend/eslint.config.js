@@ -37,5 +37,13 @@ export default [
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },
+  {
+    files: ["**/*.test.{js,jsx}", "src/test/**/*.{js,jsx}"],
+    rules: {
+      "react/display-name": "off",
+      "react-refresh/only-export-components": "off",
+      "no-undef": "off",
+    },
+  },
   prettier,
 ];
