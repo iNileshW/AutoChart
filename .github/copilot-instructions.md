@@ -120,6 +120,10 @@ Follow the UKHO software engineering policies throughout development:
 - **Code Generation Tools Policy**: https://github.com/UKHO/docs/blob/main/software-engineering-policies/CodeGenerationTools/CodeGenerationToolsPolicy.md
 - **Unit Testing Policy**: https://github.com/UKHO/docs/blob/main/software-engineering-policies/UnitTesting/UnitTestingPolicy.md
 - **Frontend Policy**: https://github.com/UKHO/docs/blob/main/software-engineering-policies/FrontEnd/FrontEndPolicy.md
+- **Logging**: Log all the changes :
+    - with timestamp, what changed, why changed, changed by whom in /home/lab-admin/Documents/my-work/graduation-project/AutoChart/AI_LOG.md 
+    - Any identified Risks, Assumptions, Issues, Dependencies in /home/lab-admin/Documents/my-work/graduation-project/AutoChart/RAID_LOG.md
+
 
 ### Infrastructure & Deployment
 
