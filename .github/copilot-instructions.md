@@ -23,7 +23,7 @@ AutoChart/
 ├── src/
 │   └── autochart/
 │       └── __init__.py          # Main package initialization
-├── data/
+├── data_original/
 │   ├── Old_Chart_Scheme.*       # Old chart shapefiles
 │   └── New_Chart_Scheme.*       # New chart shapefiles
 ├── notebook.ipynb               # Jupyter notebook for analysis
@@ -37,7 +37,7 @@ AutoChart/
 
 - Load and parse both old and new chart shapefiles using `geopandas.read_file()`
 - Pass file paths directly to `geopandas.read_file()`, not to `geodatasets.get_path()`
-- Example: `gdf = geopandas.read_file(r"data\New_Chart_Scheme.shp")`
+- Example: `gdf = geopandas.read_file(r"data_original\New_Chart_Scheme.shp")`
 
 ### Polygon Comparison
 
@@ -79,10 +79,10 @@ AutoChart/
 import geopandas
 
 # Load old chart
-gdf_old = geopandas.read_file(r"data\Old_Chart_Scheme.shp")
+gdf_old = geopandas.read_file(r"data_original\Old_Chart_Scheme.shp")
 
 # Load new chart
-gdf_new = geopandas.read_file(r"data\New_Chart_Scheme.shp")
+gdf_new = geopandas.read_file(r"data_original\New_Chart_Scheme.shp")
 ```
 
 ### Comparing Geometries

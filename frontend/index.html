@@ -3,7 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>AutoChart</title>
+    <script>
+      // Kill any stale service worker on this origin (leftover from prior dev apps
+      // on the same port). Reload once so hashed asset requests hit the network.
+      (function () {
+        if (!("serviceWorker" in navigator)) return;
+        var flag = "__autochart_sw_cleared__";
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          if (!regs || regs.length === 0) return;
+Promise.all(regs.map(function (r) { return r.unregister(); }))
+  .then(function () {
+    if (!sessionStorage.getItem(flag)) {
+      sessionStorage.setItem(flag, "1");
+      location.reload();
+    }
+  });
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
