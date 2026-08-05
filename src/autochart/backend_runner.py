@@ -1,11 +1,12 @@
+import os
+
 import uvicorn
 
 
 def main() -> None:
-    uvicorn.run("autochart.backend.main:app", host="0.0.0.0", port=8000, reload=True)
-
-def matchData(chartNumber: str) -> bool:
-    if "match" in chartNumber:
-        return True
-    else:
-        return False
+    uvicorn.run(
+        "autochart.backend.main:app",
+        host=os.getenv("AUTOCHART_HOST", "127.0.0.1"),
+        port=int(os.getenv("AUTOCHART_PORT", "8000")),
+        reload=os.getenv("AUTOCHART_RELOAD", "0") == "1",
+    )

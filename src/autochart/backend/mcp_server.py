@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel
 
 from autochart.backend import data as data_service
@@ -117,10 +117,13 @@ def _error(request_id: Any, code: int, message: str) -> dict[str, Any]:
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
-@router.post("")
-def mcp_jsonrpc(request: JsonRpcRequest) -> dict[str, Any]:
+@router.post("", response_model=None)
+def mcp_jsonrpc(request: JsonRpcRequest) -> dict[str, Any] | Response:
     if request.jsonrpc != "2.0":
         raise HTTPException(status_code=400, detail="Only JSON-RPC 2.0 is supported")
+
+    if request.id is None:
+        return Response(status_code=204)
 
     if request.method == "initialize":
         return {

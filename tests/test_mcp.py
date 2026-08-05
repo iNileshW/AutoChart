@@ -58,6 +58,14 @@ def test_unknown_method_returns_error(client: TestClient) -> None:
     assert body["error"]["code"] == -32601
 
 
+def test_notification_returns_no_content(client: TestClient) -> None:
+    r = client.post(
+        "/mcp",
+        json={"jsonrpc": "2.0", "method": "notifications/initialized"},
+    )
+    assert r.status_code == 204
+
+
 def test_unknown_tool_returns_error(client: TestClient) -> None:
     body = _rpc(client, "tools/call", params={"name": "chart.nope", "arguments": {}})
     assert body["error"]["code"] == -32602
