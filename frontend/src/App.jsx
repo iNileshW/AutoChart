@@ -208,9 +208,11 @@ function OverlapView() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`api/panels?max_scale=${MAX_SCALE}`)
-      .then((r) => r.json())
-      .then((list) => {
+fetch(`api/panels?max_scale=${MAX_SCALE}`)
+  .then((r) => {
+    if (!r.ok) throw new Error(`API error: ${r.status}`);
+    return r.json();
+  })
         setPanels(list);
         if (list.length > 0) setSelected(list[0].panel_main);
       })
