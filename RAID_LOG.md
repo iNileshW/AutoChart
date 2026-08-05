@@ -27,7 +27,7 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 | --- | --- | --- | --- | --- | --- | --- |
 | A-003 | 2026-08-03 | MCP interactions will be served via FastAPI endpoint `/mcp` in JSON-RPC 2.0 format. | Confirm protocol and tool-method design in integration testing. | Platform Lead | Open | 2026-08-03 |
 | A-002 | 2026-08-03 | Frontend runs on `http://localhost:5173` and backend on `http://localhost:8000` for local development. | Verify startup scripts and Vite proxy behavior in CI and local setup docs. | Full Stack Lead | Validated | 2026-08-03 |
-| A-001 | 2026-08-03 | Source shapefiles are complete and sidecar files remain together in `data/`. | Add pre-run data integrity checks for required shapefile components. | Data/GIS Lead | Open | 2026-08-03 |
+| A-001 | 2026-08-03 | Source shapefiles are complete and sidecar files remain together in `data_original/`. | Add pre-run data integrity checks for required shapefile components. | Data/GIS Lead | Open | 2026-08-03 |
 
 ## Issues Log
 
