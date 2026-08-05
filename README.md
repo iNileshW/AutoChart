@@ -100,6 +100,18 @@ The build uses `vite base: "./"` and all client fetches are path-relative (`api/
 uv run pytest
 ```
 
+## Lint & format (frontend)
+
+```bash
+cd frontend
+npm run lint          # ESLint check
+npm run lint:fix      # ESLint auto-fix
+npm run format        # Prettier write
+npm run format:check  # Prettier check
+```
+
+ESLint uses the flat config in `frontend/eslint.config.js` with React, React Hooks, and React Refresh rules; `eslint-config-prettier` disables stylistic rules that overlap with Prettier. Prettier config lives in `frontend/.prettierrc.json`.
+
 Test coverage:
 - `tests/test_data.py` — lookup semantics per mode, scale filter, GeoJSON shape
 - `tests/test_overlap.py` — `plot_panel_overlap` PNG magic bytes + metrics
