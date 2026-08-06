@@ -62,4 +62,9 @@ class GetDataResponse(BaseModel):
     max_scale: int | None
 
 
+class OverlapGeoJSONRequest(BaseModel):
+    panel_names: list[str] = Field(default_factory=list)
+    max_scale: int | None = Field(default=30000, ge=0)
+
+
 ChatResponse.model_rebuild()

@@ -55,14 +55,6 @@ label {
   font-weight: 600;
 }
 
-textarea {
-  width: 100%;
-  padding: 0.85rem;
-  border: 1px solid #c6d4e6;
-  border-radius: 10px;
-  font: inherit;
-}
-
 button {
   margin-top: 0.75rem;
   background: linear-gradient(120deg, var(--brand), var(--brand-2));
@@ -165,4 +157,110 @@ input {
   margin-top: 0;
   font-size: 1.15rem;
   color: var(--brand-2);
+}
+
+.topnav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid #dbe4ef;
+  padding-bottom: 0.5rem;
+}
+
+.nav-link {
+  margin: 0;
+  padding: 0.4rem 0.9rem;
+  background: transparent;
+  color: var(--brand-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  background: rgba(3, 105, 161, 0.08);
+}
+
+.nav-link.active {
+  background: var(--brand-2);
+  color: #fff;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border: 1px solid #dce8f7;
+  border-radius: 10px;
+  background: #f8fbff;
+  margin-bottom: 0.75rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.chat-empty {
+  margin: 0;
+}
+
+.chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
+  max-width: 90%;
+}
+
+.chat-msg p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.chat-role {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.chat-user {
+  align-self: flex-end;
+  background: rgba(15, 118, 110, 0.12);
+  border: 1px solid rgba(15, 118, 110, 0.2);
+}
+
+.chat-assistant {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid #dbe4ef;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid #c6d4e6;
+  border-radius: 10px;
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+  font-size: 0.9rem;
+  min-height: 140px;
+  resize: vertical;
 }

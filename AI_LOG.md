@@ -188,6 +188,135 @@ This file tracks code and configuration changes made by AI in this repository.
 ### Notes
 - Full react-leaflet render fails under jsdom (no canvas). Tests mock it via `vi.mock("react-leaflet", ...)` and assert on the passthrough elements plus data attributes.
 
+## 2026-08-06
+
+### Summary
+- Trim the SPA per stakeholder feedback: drop the initial "Ask about a chart." placeholder inside the ChatBot and remove the Panel-overlap section entirely from the UI. Backend `/api/overlap` and MCP `chart.overlap` remain in place for programmatic callers.
+
+### Updated Files
+- frontend/src/App.jsx
+  - `ChatBot`: initial `reply` state is empty and the `<pre>` is only rendered when there is text.
+  - `OverlapView` component removed along with its render in `App`; hero copy updated to "chatbot and map".
+- frontend/src/test/OverlapView.test.jsx — deleted (component no longer exists).
+- README.md — architecture bullet reflects "chatbot and map"; frontend-tests list drops the OverlapView entry.
+
+### Validation
+- `npm test` → 7 passed (2 files).
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+
+### Notes
+- Backend/MCP overlap functionality and its pytest coverage are untouched; only the UI surface was removed.
+
+## 2026-08-06 (Map zoom + overlap on chat lookup)
+
+### Summary
+- The ChatBot now drives the map: submitting a lookup zooms the map onto the matched panels, highlights them, and paints the old ∩ new intersection.
+
+### Added Files
+- (backend logic added in-place — no new source files)
+
+### Updated Files
+- src/autochart/backend/data.py — new `overlap_geojson(panel_names, max_scale)` returning a GeoJSON FeatureCollection with the old ∩ new intersection polygons (EPSG:4326), plus `bounds_4326`, `old_selected_4326`, `new_selected_4326`. `_select_by_names` helper for case-insensitive name filtering.
+- src/autochart/backend/overlap.py — replaced deprecated `unary_union` with `union_all()`.
+- src/autochart/backend/schemas.py — added `OverlapGeoJSONRequest`.
+- src/autochart/backend/api/routes.py — added `POST /api/overlap-geojson`.
+- tests/test_data.py — coverage for `overlap_geojson` (populated + empty).
+- tests/test_api.py — coverage for `/api/overlap-geojson`.
+- frontend/src/App.jsx
+  - `ChatBot` now accepts `onLookup(lookup)`, called with the returned lookup on success and `null` on failure.
+  - `MapView` accepts `focus` (a lookup response). It fetches `/api/overlap-geojson`, highlights matched features (thicker border, higher fill), and adds a green intersection overlay layer.
+  - `FocusController` (inner component, uses `useMap`) calls `map.fitBounds` when the overlap bounds arrive.
+  - `App` holds the lookup state and wires `ChatBot` ↔ `MapView`.
+- frontend/src/test/ChatBot.test.jsx — new test asserting `onLookup` is called with the returned payload.
+- frontend/src/test/MapView.test.jsx — new test asserting `/api/overlap-geojson` is called with the collected panel names when `focus` is provided; `useMap` stubbed in the `react-leaflet` mock.
+- README.md — endpoint table updated with `/api/overlap-geojson`.
+
+### Validation
+- `uv run pytest` → 27 passed, 1 warning (only starlette TestClient deprecation).
+- `cd frontend && npm test` → 9 passed.
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+
+### Notes
+- Frontend matching is done by panel name (`PANEL_MAIN` for old, `Panel_Name` for new). `Panel_ID` is not unique in the new dataset, so name matching is more stable.
+- The backend keeps the existing `/api/overlap` (PNG) endpoint for the MCP tool and for programmatic consumers; the map path uses the new GeoJSON endpoint.
+
+## 2026-08-06 (Parity pass: MCP tool + missing tests)
+
+### Summary
+- Expose the new intersection endpoint over MCP so both transports are at feature parity.
+- Cover the empty-input branch of `/api/overlap-geojson` and the new MCP tool.
+
+### Updated Files
+- src/autochart/backend/mcp_server.py — new `chart.overlap_geojson` tool advertised in `tools/list` and dispatched in `_call_tool`.
+- tests/test_api.py — added `test_overlap_geojson_empty_input`.
+- tests/test_mcp.py — `tools/list` now asserts on `chart.overlap_geojson`; new `test_tools_call_overlap_geojson_returns_intersection`.
+- README.md — MCP tool list includes `chart.overlap_geojson`.
+
+### Validation
+- `uv run pytest` → 29 passed, 1 warning.
+- Live `POST /mcp tools/list` → `['chart.lookup', 'chart.get_data', 'chart.overlap', 'chart.overlap_geojson', 'chart.list_panels', 'chart.compare']`.
+- Live `chart.overlap_geojson` call for `["Looe", "F Looe", "Looe Bay"]` returns 1 intersection polygon + bounds.
+
+## 2026-08-06 (MCP chatbot page)
+
+### Summary
+- Add a second UI view: an MCP chatbot that talks JSON-RPC directly to `/mcp`. Reached from a new top-nav link ("MCP chatbot"). Home view is unchanged.
+
+### Added Files
+- frontend/src/test/MCPChat.test.jsx — coverage for tool-list load, `tools/call` body, invalid-JSON guard, JSON-RPC error surfacing.
+
+### Updated Files
+- frontend/src/App.jsx
+  - `mcpCall(method, params)` helper (path-relative `mcp` fetch).
+  - `MCPChat` component: fetches `tools/list`, renders a tool selector + textarea prefilled from the tool's `inputSchema` sample, calls `tools/call` with parsed args, renders each content chunk (text → `<pre>` with pretty-printed JSON when parseable; image → base64 `<img>`).
+  - `App` gains a `view` state and a top nav with "Home" and "MCP chatbot" buttons; existing Home wiring (`ChatBot` + `MapView`) untouched.
+  - Extracted a pure `sampleArgsFor(tool)` helper so tool-change resets happen in the `<select>` `onChange` handler instead of a setState-in-effect chain.
+- frontend/src/styles.css — new `.topnav`, `.nav-link`, `.muted` rules; consolidated the `textarea` block.
+- README.md — mentions the new top-nav view and lists the new test file.
+
+### Validation
+- `cd frontend && npm test` → 13 passed (3 files).
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+- Live backend serves the new bundle; `/mcp` unchanged.
+
+### Notes
+- User-event's `.type()` interprets `{...}` as escape sequences, so the "issues tools/call" test uses `.paste()` to insert raw JSON.
+- Home flow (Chatbot → MapView zoom + overlap) is unchanged.
+
+## 2026-08-06 (Conversational MCP chatbot)
+
+### Summary
+- Reshape the MCP chatbot: no more direct tool-call UI or raw JSON output. Users type a natural-language chart query, backend parses it and returns a single prose sentence via a new `chart.answer` MCP tool.
+
+### Updated Files
+- src/autochart/backend/data.py — new `answer(query)` helper + `_summarise_matches` prose formatter. Parses digit blocks as chart numbers, tokens containing `_` and a digit as panel IDs, otherwise falls back to name search. Returns a plain sentence.
+- src/autochart/backend/mcp_server.py — new `chart.answer` MCP tool (advertised in `tools/list`, dispatched in `_call_tool`).
+- tests/test_data.py — coverage for `answer` (chart number, name, unknown, empty).
+- tests/test_mcp.py — `tools/list` asserts on `chart.answer`; new `test_tools_call_answer_returns_prose` verifies the returned text is prose (no `{` or `}`).
+- frontend/src/App.jsx
+  - `MCPChat` rewritten: chat thread with user + assistant bubbles, an input, Enter-to-send. Only calls `chart.answer` via the existing `mcpCall` helper. Removed the tool selector, JSON textarea, `sampleArgsFor`, and result-content rendering.
+  - `App` view toggle unchanged; MCP tab now shows the conversational widget.
+- frontend/src/styles.css — new `.chat-thread`, `.chat-msg`, `.chat-user`, `.chat-assistant`, `.chat-role`, `.sr-only`.
+- frontend/src/test/MCPChat.test.jsx — rewritten to cover: empty mount, chart.answer request body + prose render, Enter submits, JSON-RPC error message surfaces, empty input disables send.
+- README.md — MCP tool list mentions `chart.answer`; Home/MCP nav description updated.
+
+### Validation
+- `uv run pytest` → 34 passed, 1 warning.
+- `cd frontend && npm test` → 14 passed.
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+- Live `POST /mcp chart.answer {"query": "2345"}` → prose string with panel names and scales, no raw JSON.
+
+### Notes
+- The existing programmatic MCP tools (`chart.lookup`, `chart.overlap`, `chart.overlap_geojson`, `chart.get_data`, `chart.list_panels`, `chart.compare`) remain untouched for scripting and agent use; only the frontend surface changed.
+
 ## Ongoing Tracking Format
 Use this format for future entries:
 

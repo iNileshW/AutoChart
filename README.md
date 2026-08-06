@@ -4,7 +4,7 @@ AutoChart compares old and new UKHO geospatial navigation chart polygons and hel
 
 ## Architecture
 
-- **Frontend**: React + Vite in `frontend/` (chatbot, Leaflet map, panel overlap view).
+- **Frontend**: React + Vite in `frontend/`. Two views selected from a top nav: **Home** (chatbot + Leaflet map with old ∩ new overlay) and **MCP chatbot** (natural-language chat that calls `chart.answer` over MCP and shows a prose reply — no raw JSON). The `/api/overlap` REST endpoint and the `chart.overlap` MCP tool remain available for programmatic use.
 - **Backend API**: FastAPI in `src/autochart/backend/` (data + overlap service layer, REST routes).
 - **MCP endpoint**: JSON-RPC 2.0 tools mounted at `/mcp`, sharing the same service layer as the REST API.
 - **Data**: chart polygons loaded from GeoJSON exports of `data_original/*.shp` (see `src/autochart/backend/data.py`).
@@ -28,6 +28,7 @@ Everything lives under `/api`:
 | `GET`  | `/api/data?max_scale=30000` | Return old + new panel geometry as GeoJSON `FeatureCollection`s |
 | `POST` | `/api/lookup` | `{mode, value}` — modes: `chart_number`, `chart_name`, `chart_title`, `panel_id` |
 | `POST` | `/api/overlap` | `{panel_main, max_scale}` — returns base64 PNG + metrics from `plot_panel_overlap` |
+| `POST` | `/api/overlap-geojson` | `{panel_names[], max_scale}` — intersection polygons + bounds in EPSG:4326 for map consumers |
 | `POST` | `/api/chat` | Chatbot that infers `mode`/`value` from a natural sentence or explicit fields |
 
 Overlap and panel listing enforce `Scale <= 30000` by default.
@@ -41,6 +42,8 @@ Tools:
 - `chart.get_data` — same as `/api/data`
 - `chart.list_panels` — same as `/api/panels`
 - `chart.overlap` — returns a `text` + `image/png` content pair
+- `chart.overlap_geojson` — same semantics as `/api/overlap-geojson` (intersection polygons + bounds)
+- `chart.answer` — conversational summary for a free-text query about a chart (number, name, title, or panel id). Returns a single prose string, no raw JSON.
 - `chart.compare` — alias for `chart.overlap`
 
 Example:
@@ -122,8 +125,8 @@ npm run test:watch    # Vitest watch mode
 
 Vitest runs under jsdom with React Testing Library. Test files live in `frontend/src/test/`:
 - `ChatBot.test.jsx` — form + fetch + reply rendering + error handling
-- `OverlapView.test.jsx` — panel loading, overlap request, PNG + metrics render
 - `MapView.test.jsx` — loading/error states + GeoJSON layer counts (react-leaflet is mocked so tests run without a canvas-capable DOM)
+- `MCPChat.test.jsx` — MCP tool catalogue load, `tools/call` request body, invalid-JSON guard, JSON-RPC error rendering
 
 Test coverage:
 - `tests/test_data.py` — lookup semantics per mode, scale filter, GeoJSON shape
