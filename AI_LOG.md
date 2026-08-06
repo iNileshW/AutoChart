@@ -317,6 +317,37 @@ This file tracks code and configuration changes made by AI in this repository.
 ### Notes
 - The existing programmatic MCP tools (`chart.lookup`, `chart.overlap`, `chart.overlap_geojson`, `chart.get_data`, `chart.list_panels`, `chart.compare`) remain untouched for scripting and agent use; only the frontend surface changed.
 
+## 2026-08-06 (Observability baseline)
+
+### Summary
+- Wire a light observability stack — env-gated so nothing is required for dev — covering metrics, tracing, error reporting, health probes, and browser web-vitals.
+
+### Added Files
+- src/autochart/backend/observability.py — `install(app)` wires Prometheus, OpenTelemetry, and Sentry when their env vars are set; `log_web_vital` normalises browser reports through structlog.
+- tests/test_observability.py — coverage for `/livez`, `/healthz`, `/metrics`, and the telemetry endpoint (accept + validation).
+- docs/adr/0003-observability-baseline.md — decision record.
+- frontend/src/telemetry.js — CLS/INP/LCP/FCP/TTFB reporter using `navigator.sendBeacon`.
+
+### Updated Files
+- pyproject.toml + uv.lock — added prometheus-fastapi-instrumentator, opentelemetry-{api,sdk,instrumentation-fastapi,exporter-otlp-proto-http}, sentry-sdk[fastapi] as runtime deps.
+- src/autochart/backend/config.py — new toggles: METRICS_ENABLED, OTEL_ENDPOINT, OTEL_SERVICE_NAME, SENTRY_DSN/ENVIRONMENT/TRACES_SAMPLE_RATE.
+- src/autochart/backend/main.py — calls `install_observability(app)` at construction; adds `/livez`, `/healthz`, and `POST /api/telemetry` (WebVitalIn).
+- src/autochart/backend/security.py — public paths list now covers `/livez`, `/healthz`, `/metrics`.
+- .env.example — documents the new env vars.
+- frontend/package.json — adds `web-vitals@^4`.
+- frontend/src/main.jsx — calls `reportWebVitals()` at mount.
+- docs/adr/README.md, README.md — link ADR 0003 and document the new endpoints.
+
+### Validation
+- `uv run pytest` → 45 passed, 81.4% coverage (above the 75% floor).
+- `uv run ruff check src tests` / `ruff format --check` — clean.
+- `uv run mypy` — clean.
+- `cd frontend && npm run lint && npm test && npm run build` — clean; index chunk +2 KB gzip for web-vitals.
+
+### Notes
+- All observability entry points fail silently when their libraries are absent (never blocks startup).
+- `/metrics` is currently public — noted in ADR 0003 as a follow-up if scraped from an untrusted network.
+
 ## Ongoing Tracking Format
 Use this format for future entries:
 

@@ -8,6 +8,7 @@ We follow the [gov.uk Architectural Decision Record framework](https://www.gov.u
 |----|-------|--------|
 | [0001](0001-single-fastapi-serves-spa-rest-mcp.md) | One FastAPI process serves the SPA, REST API, and MCP endpoint | Accepted |
 | [0002](0002-admiralty-design-tokens-and-logo.md) | Adopt Admiralty brand tokens and UKHO logo for the SPA | Accepted |
+| [0003](0003-observability-baseline.md) | Observability baseline — Prometheus, OpenTelemetry, Sentry, web-vitals | Accepted |
 
 ## Adding a new ADR
 
