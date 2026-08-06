@@ -188,6 +188,27 @@ This file tracks code and configuration changes made by AI in this repository.
 ### Notes
 - Full react-leaflet render fails under jsdom (no canvas). Tests mock it via `vi.mock("react-leaflet", ...)` and assert on the passthrough elements plus data attributes.
 
+## 2026-08-06
+
+### Summary
+- Trim the SPA per stakeholder feedback: drop the initial "Ask about a chart." placeholder inside the ChatBot and remove the Panel-overlap section entirely from the UI. Backend `/api/overlap` and MCP `chart.overlap` remain in place for programmatic callers.
+
+### Updated Files
+- frontend/src/App.jsx
+  - `ChatBot`: initial `reply` state is empty and the `<pre>` is only rendered when there is text.
+  - `OverlapView` component removed along with its render in `App`; hero copy updated to "chatbot and map".
+- frontend/src/test/OverlapView.test.jsx — deleted (component no longer exists).
+- README.md — architecture bullet reflects "chatbot and map"; frontend-tests list drops the OverlapView entry.
+
+### Validation
+- `npm test` → 7 passed (2 files).
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+
+### Notes
+- Backend/MCP overlap functionality and its pytest coverage are untouched; only the UI surface was removed.
+
 ## Ongoing Tracking Format
 Use this format for future entries:
 

@@ -14,7 +14,7 @@ const MAX_SCALE = 30000;
 export function ChatBot() {
   const [mode, setMode] = useState("chart_name");
   const [value, setValue] = useState("Looe");
-  const [reply, setReply] = useState("Ask about a chart.");
+  const [reply, setReply] = useState("");
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -65,7 +65,7 @@ export function ChatBot() {
         {loading ? "Searching..." : "Ask"}
       </button>
       <div className="reply">
-        <pre>{reply}</pre>
+        {reply && <pre>{reply}</pre>}
         {details && (
           <div className="details">
             <p>
@@ -200,108 +200,19 @@ export function MapView() {
   );
 }
 
-export function OverlapView() {
-  const [panels, setPanels] = useState([]);
-  const [selected, setSelected] = useState("");
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetch(`api/panels?max_scale=${MAX_SCALE}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`API error: ${r.status}`);
-        return r.json();
-      })
-      .then((list) => {
-        setPanels(list);
-        if (list.length > 0) setSelected(list[0].panel_main);
-      })
-      .catch((e) => setError(e.message));
-  }, []);
-
-  const submit = async () => {
-    if (!selected) return;
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    try {
-      const res = await fetch("api/overlap", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ panel_main: selected, max_scale: MAX_SCALE }),
-      });
-      if (!res.ok) {
-        const detail = await res.json().catch(() => ({}));
-        throw new Error(detail.detail || `API error: ${res.status}`);
-      }
-      setResult(await res.json());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <section className="panel">
-      <h2>Panel overlap (Scale ≤ {MAX_SCALE.toLocaleString()})</h2>
-      <div className="row">
-        <label htmlFor="panel">Panel</label>
-        <select id="panel" value={selected} onChange={(e) => setSelected(e.target.value)}>
-          {panels.map((p) => (
-            <option key={p.panel_iden || p.panel_main} value={p.panel_main}>
-              {p.panel_main} (scale {p.scale ?? "n/a"})
-            </option>
-          ))}
-        </select>
-      </div>
-      <button type="button" onClick={submit} disabled={loading || !selected}>
-        {loading ? "Rendering..." : "Show overlap"}
-      </button>
-      {error && <p className="error">Failed: {error}</p>}
-      {result && (
-        <div className="overlap-out">
-          <img
-            src={`data:image/png;base64,${result.png_base64}`}
-            alt={`Overlap for ${result.panel_main}`}
-          />
-          <ul>
-            <li>
-              Old area:{" "}
-              {result.metrics.old_area_m2.toLocaleString(undefined, { maximumFractionDigits: 0 })}{" "}
-              m²
-            </li>
-            <li>
-              Overlap area:{" "}
-              {result.metrics.new_overlap_area_m2.toLocaleString(undefined, {
-                maximumFractionDigits: 0,
-              })}{" "}
-              m²
-            </li>
-            <li>Overlap % of old: {result.metrics.overlap_pct_old.toFixed(2)}%</li>
-            <li>Intersecting new polygons: {result.metrics.new_polygons_intersecting}</li>
-          </ul>
-        </div>
-      )}
-    </section>
-  );
-}
-
 export default function App() {
   return (
     <main className="page">
       <section className="hero">
         <p className="eyebrow">AutoChart</p>
-        <h1>Chart comparison — chatbot, map, and overlap</h1>
+        <h1>Chart comparison — chatbot and map</h1>
         <p>
-          Backend at <strong>/api</strong>, MCP at <strong>/mcp</strong>. Overlap and map limit
-          panels to Scale ≤ {MAX_SCALE.toLocaleString()}.
+          Backend at <strong>/api</strong>, MCP at <strong>/mcp</strong>. Map is limited to Scale ≤{" "}
+          {MAX_SCALE.toLocaleString()}.
         </p>
       </section>
       <ChatBot />
       <MapView />
-      <OverlapView />
     </main>
   );
 }
