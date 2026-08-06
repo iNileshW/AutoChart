@@ -91,7 +91,13 @@ def lookup(mode: str, value: str) -> dict[str, Any]:
     new = load_new()
     q = _norm(value)
     if not q:
-        return {"mode": mode, "value": value, "old_matches": [], "new_matches": [], "new_chart_available": False}
+        return {
+            "mode": mode,
+            "value": value,
+            "old_matches": [],
+            "new_matches": [],
+            "new_chart_available": False,
+        }
 
     old_mask = pd.Series(False, index=old.index)
     new_mask = pd.Series(False, index=new.index)
@@ -101,7 +107,9 @@ def lookup(mode: str, value: str) -> dict[str, Any]:
         old_ids = old[OLD_PANEL_ID_COL].map(_extract_chart_id).fillna("").str.casefold()
         old_mask = old_ids.str.contains(re.escape(digits_q), na=False)
         new_ids = new[NEW_CHART_COL].map(_extract_chart_id).fillna("").str.casefold()
-        raw_match = new[NEW_CHART_COL].astype(str).str.casefold().str.contains(re.escape(q), na=False)
+        raw_match = (
+            new[NEW_CHART_COL].astype(str).str.casefold().str.contains(re.escape(q), na=False)
+        )
         digit_match = new_ids.str.contains(re.escape(digits_q), na=False)
         new_mask = raw_match | digit_match
     elif mode in {"chart_name", "chart_title"}:
@@ -110,7 +118,9 @@ def lookup(mode: str, value: str) -> dict[str, Any]:
         old_mask = old_names.str.contains(re.escape(q), na=False)
         new_mask = new_names.str.contains(re.escape(q), na=False)
     elif mode == "panel_id":
-        old_mask = old[OLD_PANEL_ID_COL].astype(str).str.casefold().str.contains(re.escape(q), na=False)
+        old_mask = (
+            old[OLD_PANEL_ID_COL].astype(str).str.casefold().str.contains(re.escape(q), na=False)
+        )
         new_mask = new[NEW_PANEL_ID_COL].astype(str).str.casefold() == q
     else:
         raise ValueError(f"Unknown lookup mode: {mode}")
@@ -154,9 +164,7 @@ def get_data(max_scale: int | None = MAX_SCALE) -> dict[str, Any]:
     }
 
 
-def _select_by_names(
-    gdf: gpd.GeoDataFrame, col: str, names: list[Any]
-) -> gpd.GeoDataFrame:
+def _select_by_names(gdf: gpd.GeoDataFrame, col: str, names: list[Any]) -> gpd.GeoDataFrame:
     if not names:
         return gdf.iloc[0:0]
     wanted = {str(x).strip().casefold() for x in names if x is not None and str(x).strip()}
@@ -220,16 +228,20 @@ def overlap_geojson(
             inter_gdf = gpd.GeoDataFrame(geometry=[inter], crs="EPSG:27700").to_crs("EPSG:4326")
             intersection_fc = json.loads(inter_gdf.to_json(default=_json_default))
 
-return {
-    **intersection_fc,
-    "bounds_4326": bounds,
-    "old_selected_4326": _gdf_to_geojson(old_4326)
-    if not old_4326.empty
-    else {"type": "FeatureCollection", "features": []},
-    "new_selected_4326": _gdf_to_geojson(new_4326)
-    if not new_4326.empty
-    else {"type": "FeatureCollection", "features": []},
-}
+    return {
+        **intersection_fc,
+        "bounds_4326": bounds,
+        "old_selected_4326": (
+            _gdf_to_geojson(old_4326)
+            if not old_4326.empty
+            else {"type": "FeatureCollection", "features": []}
+        ),
+        "new_selected_4326": (
+            _gdf_to_geojson(new_4326)
+            if not new_4326.empty
+            else {"type": "FeatureCollection", "features": []}
+        ),
+    }
 
 
 def _summarise_matches(subject: str, result: dict[str, Any]) -> str:
@@ -239,9 +251,7 @@ def _summarise_matches(subject: str, result: dict[str, Any]) -> str:
     if new:
         charts = sorted({str(m.get("Chart")) for m in new if m.get("Chart")})
         names = sorted({str(m.get("Panel_Name")) for m in new if m.get("Panel_Name")})
-        scales = sorted(
-            {int(m["Pan_Scale"]) for m in new if m.get("Pan_Scale") is not None}
-        )
+        scales = sorted({int(m["Pan_Scale"]) for m in new if m.get("Pan_Scale") is not None})
         parts.append(f"Yes — a new chart is available for {subject}.")
         if charts:
             parts.append(f"New chart identifier(s): {', '.join(charts)}.")
@@ -259,9 +269,7 @@ def _summarise_matches(subject: str, result: dict[str, Any]) -> str:
         idens = sorted({str(m.get("PANEL_IDEN")) for m in old if m.get("PANEL_IDEN")})
         head = ", ".join(panels[:5])
         more = f" (+{len(panels) - 5} more)" if len(panels) > 5 else ""
-        parts.append(
-            f"Existing old chart coverage: {len(old)} panel(s) — {head}{more}."
-        )
+        parts.append(f"Existing old chart coverage: {len(old)} panel(s) — {head}{more}.")
         if len(idens) <= 8:
             parts.append(f"Panel IDs: {', '.join(idens)}.")
 

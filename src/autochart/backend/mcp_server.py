@@ -143,7 +143,16 @@ def _call_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
         max_scale = args.get("max_scale", data_service.MAX_SCALE)
         result = plot_panel_overlap(panel_main, max_scale=max_scale)
         content = [
-            {"type": "text", "text": json.dumps({"panel_main": result["panel_main"], "metrics": result["metrics"], "max_scale": result["max_scale"]})},
+            {
+                "type": "text",
+                "text": json.dumps(
+                    {
+                        "panel_main": result["panel_main"],
+                        "metrics": result["metrics"],
+                        "max_scale": result["max_scale"],
+                    }
+                ),
+            },
             {"type": "image", "mimeType": "image/png", "data": result["png_base64"]},
         ]
         return {"content": content}

@@ -24,7 +24,9 @@ from autochart.backend.data import (
 )
 
 
-def _filter_by_scale(gdf: gpd.GeoDataFrame, scale_col: str, max_scale: int | None) -> gpd.GeoDataFrame:
+def _filter_by_scale(
+    gdf: gpd.GeoDataFrame, scale_col: str, max_scale: int | None
+) -> gpd.GeoDataFrame:
     if max_scale is None or scale_col not in gdf.columns:
         return gdf
     scale = pd.to_numeric(gdf[scale_col], errors="coerce")
@@ -52,7 +54,9 @@ def plot_panel_overlap(
     old_selected = old_df.loc[old_mask].copy()
 
     if old_selected.empty:
-        raise ValueError(f"No old polygons found for PANEL_MAIN='{panel_main}' within Scale<={max_scale}")
+        raise ValueError(
+            f"No old polygons found for PANEL_MAIN='{panel_main}' within Scale<={max_scale}"
+        )
 
     if old_df.crs != new_df.crs:
         new_df = new_df.to_crs(old_df.crs)
@@ -120,6 +124,6 @@ def plot_panel_overlap(
             "old_area_m2": old_area,
             "new_overlap_area_m2": overlap_area,
             "overlap_pct_old": overlap_pct_old,
-            "new_polygons_intersecting": int(len(new_hits)),
+            "new_polygons_intersecting": len(new_hits),
         },
     }

@@ -1,7 +1,7 @@
 # RAID Log
 
 Project: AutoChart
-Last Updated: 2026-08-03
+Last Updated: 2026-08-06
 Owner: Engineering Team
 
 This document tracks Risks, Assumptions, Issues, and Dependencies for project delivery.
@@ -17,7 +17,12 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 
 | ID | Date Raised | Risk Description | Impact | Likelihood | Mitigation Plan | Owner | Status | Last Reviewed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| R-003 | 2026-08-03 | Frontend and backend contracts may diverge as API evolves beyond starter endpoints. | High | Medium | Introduce versioned API schema and contract tests for `/api/chat` and future endpoints. | Backend Lead | Open | 2026-08-03 |
+| R-008 | 2026-08-06 | Reverse-proxy (`/proxy/<port>/`) usage in the dev VM makes any absolute path break assets/fetches. | Medium | High | Vite `base: "./"`, path-relative fetches, and a custom `/docs` route. Documented in README. | Frontend Lead | Mitigated | 2026-08-06 |
+| R-007 | 2026-08-06 | Wide-open CORS + no auth would expose the API if deployed publicly as-is. | High | Medium | CORS allow-list env var (`AUTOCHART_ALLOWED_ORIGINS`), optional API-key middleware (`AUTOCHART_API_KEY`), Clear-Site-Data on `/?nuke=1`. | Backend Lead | Mitigated | 2026-08-06 |
+| R-006 | 2026-08-06 | Absent CI could allow lint/test regressions to reach main (a CodeQL autofix briefly broke `data.py`). | High | Medium | GitHub Actions workflow gates ruff/mypy/pytest+cov, eslint/vitest, Docker build. | Platform Lead | Mitigated | 2026-08-06 |
+| R-005 | 2026-08-06 | Notebook outputs cause noisy diffs and can leak sensitive data. | Low | Medium | `nbstripout` wired via pre-commit; notebook excluded from ruff. | Data/GIS Lead | Mitigated | 2026-08-06 |
+| R-004 | 2026-08-06 | Backend loads GeoJSON exports at repo root instead of `data_original/*.shp` per CLAUDE.md. | Low | High | Accepted deviation; scheduled follow-up to load shp directly once schema stabilises. | Backend Lead | Accepted | 2026-08-06 |
+| R-003 | 2026-08-03 | Frontend and backend contracts may diverge as API evolves beyond starter endpoints. | High | Medium | `/api/v1` alias in place; Pydantic response models pinned; OpenAPI served at `/openapi.json`. Contract tests still to add. | Backend Lead | Monitoring | 2026-08-06 |
 | R-002 | 2026-08-03 | Shapefile CRS differences between old and new charts can produce false comparison results. | High | Medium | Enforce CRS normalization before geometry comparisons and validate in QGIS. | Data/GIS Lead | Monitoring | 2026-08-03 |
 | R-001 | 2026-08-03 | Large polygon datasets may cause slow comparison and API timeouts. | High | Medium | Add spatial indexing, chunking, and async/background processing for heavy jobs. | Backend Lead | Open | 2026-08-03 |
 
@@ -33,7 +38,10 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 
 | ID | Date Raised | Issue Description | Severity | Workaround | Owner | Status | Target Resolution |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| I-001 | 2026-08-03 | Chart-comparison business logic is not yet implemented in API; `/api/chat` returns placeholder response. | Medium | Use placeholder for UI integration testing only. | Backend Lead | Open | 2026-08-10 |
+| I-004 | 2026-08-06 | `Panel_ID` in the new dataset is not unique — MCP/UI matching uses name-based joins instead. | Low | Documented; downstream code uses `PANEL_MAIN`/`Panel_Name`. | Data/GIS Lead | Mitigated | 2026-08-06 |
+| I-003 | 2026-08-06 | FastAPI default `/docs` fetched an absolute `/openapi.json` and broke behind the proxy. | Low | Custom `/docs` route with relative `openapi.json`. | Backend Lead | Closed | 2026-08-06 |
+| I-002 | 2026-08-06 | CodeQL autofix on PR #5 dedented the `overlap_geojson` return block, breaking module import. | High | Restored indentation; CI now runs ruff/mypy/pytest on PRs. | Backend Lead | Closed | 2026-08-06 |
+| I-001 | 2026-08-03 | Chart-comparison business logic is not yet implemented in API; `/api/chat` returns placeholder response. | Medium | `/api/chat` now invokes `data.lookup`; MCP has `chart.answer`; map paints `old ∩ new` polygons. | Backend Lead | Closed | 2026-08-06 |
 
 ## Dependencies Log
 
@@ -49,4 +57,5 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 
 | Date | Change | Author |
 | --- | --- | --- |
+| 2026-08-06 | Added risks around reverse proxy, CORS/auth, CI absence, notebook noise, and CLAUDE.md deviation. Closed I-001/I-002/I-003; added I-004. | AI Assistant |
 | 2026-08-03 | Initial RAID log created with baseline entries. | AI Assistant |

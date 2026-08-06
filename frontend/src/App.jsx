@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, LayersControl, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { lazy, Suspense, useState } from "react";
+
+const MapView = lazy(() => import("./MapView.jsx"));
 
 const LOOKUP_MODES = [
   { value: "chart_number", label: "Chart number" },
@@ -10,18 +10,6 @@ const LOOKUP_MODES = [
 ];
 
 const MAX_SCALE = 30000;
-
-function collectNames(lookup) {
-  if (!lookup) return [];
-  const set = new Set();
-  for (const m of lookup.old_matches || []) {
-    if (m.PANEL_MAIN) set.add(String(m.PANEL_MAIN).trim());
-  }
-  for (const m of lookup.new_matches || []) {
-    if (m.Panel_Name) set.add(String(m.Panel_Name).trim());
-  }
-  return [...set].filter(Boolean);
-}
 
 export function ChatBot({ onLookup } = {}) {
   const [mode, setMode] = useState("chart_name");
@@ -79,7 +67,7 @@ export function ChatBot({ onLookup } = {}) {
         {loading ? "Searching..." : "Ask"}
       </button>
       {(reply || details) && (
-        <div className="reply">
+        <div className="reply" role="status" aria-live="polite">
           {reply && <pre>{reply}</pre>}
           {details && (
             <div className="details">
@@ -111,197 +99,6 @@ export function ChatBot({ onLookup } = {}) {
               </div>
             </div>
           )}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function FocusController({ bounds }) {
-  const map = useMap();
-  useEffect(() => {
-    if (!bounds) return;
-    map.fitBounds(bounds, { padding: [20, 20], maxZoom: 12 });
-  }, [bounds, map]);
-  return null;
-}
-
-export function MapView({ focus } = {}) {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  const [overlap, setOverlap] = useState(null);
-  const [overlapError, setOverlapError] = useState(null);
-  const overlapReqIdRef = useRef(0);
-
-  useEffect(() => {
-    let alive = true;
-    fetch(`api/data?max_scale=${MAX_SCALE}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`API error: ${r.status}`);
-        return r.json();
-      })
-      .then((d) => {
-        if (alive) setData(d);
-      })
-      .catch((e) => alive && setError(e.message));
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  const focusNames = useMemo(() => collectNames(focus), [focus]);
-  const focusKey = useMemo(() => focusNames.slice().sort().join("|"), [focusNames]);
-
-  useEffect(() => {
-    const reqId = ++overlapReqIdRef.current;
-    const promise =
-      focusNames.length === 0
-        ? Promise.resolve(null)
-        : fetch("api/overlap-geojson", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ panel_names: focusNames, max_scale: MAX_SCALE }),
-          }).then(async (r) => {
-            if (!r.ok) {
-              const detail = await r.json().catch(() => ({}));
-              throw new Error(detail.detail || `API error: ${r.status}`);
-            }
-            return r.json();
-          });
-    promise
-      .then((body) => {
-        if (overlapReqIdRef.current !== reqId) return;
-        setOverlap(body);
-        setOverlapError(null);
-      })
-      .catch((e) => {
-        if (overlapReqIdRef.current !== reqId) return;
-        setOverlap(null);
-        setOverlapError(e instanceof Error ? e.message : "Unknown error");
-      });
-    // focusKey stringifies focusNames so the effect only re-runs on a real change.
-  }, [focusKey]);
-
-  const defaultBounds = useMemo(() => {
-    if (!data) return null;
-    let minLon = Infinity,
-      minLat = Infinity,
-      maxLon = -Infinity,
-      maxLat = -Infinity;
-    const visit = (coords) => {
-      if (typeof coords[0] === "number") {
-        const [lon, lat] = coords;
-        if (lon < minLon) minLon = lon;
-        if (lon > maxLon) maxLon = lon;
-        if (lat < minLat) minLat = lat;
-        if (lat > maxLat) maxLat = lat;
-      } else {
-        coords.forEach(visit);
-      }
-    };
-    for (const collection of [data.old, data.new]) {
-      for (const f of collection.features || []) {
-        if (f.geometry) visit(f.geometry.coordinates);
-      }
-    }
-    if (!Number.isFinite(minLon)) return null;
-    return [
-      [minLat, minLon],
-      [maxLat, maxLon],
-    ];
-  }, [data]);
-
-  const focusBounds = useMemo(() => {
-    if (!overlap?.bounds_4326) return null;
-    const [minx, miny, maxx, maxy] = overlap.bounds_4326;
-    return [
-      [miny, minx],
-      [maxy, maxx],
-    ];
-  }, [overlap]);
-
-  const focusNameSet = useMemo(() => new Set(focusNames.map((n) => n.toLowerCase())), [focusNames]);
-
-  const oldStyle = (feature) => {
-    const name = String(feature?.properties?.PANEL_MAIN ?? "")
-      .trim()
-      .toLowerCase();
-    const highlighted = focusNameSet.size > 0 && focusNameSet.has(name);
-    return highlighted
-      ? { color: "#1e3a8a", weight: 3, fillOpacity: 0.25 }
-      : { color: "#1e3a8a", weight: 1, fillOpacity: focusNameSet.size > 0 ? 0.03 : 0.1 };
-  };
-
-  const newStyle = (feature) => {
-    const name = String(feature?.properties?.Panel_Name ?? "")
-      .trim()
-      .toLowerCase();
-    const highlighted = focusNameSet.size > 0 && focusNameSet.has(name);
-    return highlighted
-      ? { color: "#ea580c", weight: 3, fillOpacity: 0.3 }
-      : { color: "#ea580c", weight: 1, fillOpacity: focusNameSet.size > 0 ? 0.05 : 0.15 };
-  };
-
-  const overlapStyle = () => ({
-    color: "#16a34a",
-    weight: 2,
-    fillOpacity: 0.45,
-    fillColor: "#22c55e",
-  });
-
-  return (
-    <section className="panel">
-      <h2>Map — panels (Scale ≤ {MAX_SCALE.toLocaleString()})</h2>
-      {error && <p className="error">Failed: {error}</p>}
-      {overlapError && <p className="error">Overlap: {overlapError}</p>}
-      {!data && !error && <p>Loading data...</p>}
-      {data && (
-        <div className="map-wrap">
-          <MapContainer
-            bounds={defaultBounds ?? undefined}
-            center={defaultBounds ? undefined : [51, -3]}
-            zoom={defaultBounds ? undefined : 6}
-            style={{ height: "500px", width: "100%" }}
-          >
-            <TileLayer
-              attribution="© OpenStreetMap contributors"
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <FocusController bounds={focusBounds} />
-            <LayersControl position="topright">
-              <LayersControl.Overlay checked name={`Old panels (${data.old.features.length})`}>
-                <GeoJSON
-                  key={`old-${focusKey}`}
-                  data={data.old}
-                  style={oldStyle}
-                  onEachFeature={(feature, layer) => {
-                    const p = feature.properties || {};
-                    const el = document.createElement("pre");
-                    el.textContent = `Old\nPANEL_IDEN: ${p.PANEL_IDEN ?? ""}\nPANEL_MAIN: ${p.PANEL_MAIN ?? ""}\nSCALE: ${p.SCALE ?? ""}`;
-                    layer.bindPopup(el);
-                  }}
-                />
-              </LayersControl.Overlay>
-              <LayersControl.Overlay checked name={`New panels (${data.new.features.length})`}>
-                <GeoJSON
-                  key={`new-${focusKey}`}
-                  data={data.new}
-                  style={newStyle}
-                  onEachFeature={(feature, layer) => {
-                    const p = feature.properties || {};
-                    const el = document.createElement("pre");
-                    el.textContent = `New\nChart: ${p.Chart ?? ""}\nPanel_ID: ${p.Panel_ID ?? ""}\nPanel_Name: ${p.Panel_Name ?? ""}\nPan_Scale: ${p.Pan_Scale ?? ""}`;
-                    layer.bindPopup(el);
-                  }}
-                />
-              </LayersControl.Overlay>
-              {overlap && overlap.features && overlap.features.length > 0 && (
-                <LayersControl.Overlay checked name="Old ∩ New overlap">
-                  <GeoJSON key={`overlap-${focusKey}`} data={overlap} style={overlapStyle} />
-                </LayersControl.Overlay>
-              )}
-            </LayersControl>
-          </MapContainer>
         </div>
       )}
     </section>
@@ -389,7 +186,7 @@ export function MCPChat() {
         ))}
         {loading && (
           <div className="chat-msg chat-assistant">
-            <span className="chat-role">MCP</span>
+            <span className="chat-role">Agent</span>
             <p className="muted">Thinking...</p>
           </div>
         )}
@@ -417,46 +214,68 @@ export default function App() {
   const [lookup, setLookup] = useState(null);
   const [view, setView] = useState("home");
   return (
-    <main className="page">
-      <nav className="topnav" aria-label="Main">
-        <button
-          type="button"
-          className={view === "home" ? "nav-link active" : "nav-link"}
-          onClick={() => setView("home")}
-        >
-          Home
-        </button>
-        <button
-          type="button"
-          className={view === "mcp" ? "nav-link active" : "nav-link"}
-          onClick={() => setView("mcp")}
-        >
-          Agent Chatbot
-        </button>
-      </nav>
-      {view === "home" ? (
-        <>
-          <section className="hero">
-            <p className="eyebrow">AutoChart</p>
-            <h1>Chart comparison — chatbot and map</h1>
-            <p>
-              Backend at <strong>/api</strong>, MCP at <strong>/mcp</strong>. Map is limited to
-              Scale ≤ {MAX_SCALE.toLocaleString()}. Submit a lookup to zoom the map and show the old
-              ∩ new overlap.
-            </p>
-          </section>
-          <ChatBot onLookup={setLookup} />
-          <MapView focus={lookup} />
-        </>
-      ) : (
-        <>
-          <section className="hero">
-            <p className="eyebrow">AutoChart / Agent</p>
-            <h1>Agent Chatbot</h1>
-          </section>
-          <MCPChat />
-        </>
-      )}
-    </main>
+    <>
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
+      <header className="page-header">
+        <div className="page-header-inner">
+          <a
+            className="brand-lockup"
+            href="https://www.admiralty.co.uk/"
+            rel="noopener noreferrer"
+            aria-label="UK Hydrographic Office — Admiralty"
+          >
+            <img src="./ukho-logo.svg" alt="" aria-hidden="true" />
+            <span className="brand-lockup-text">AutoChart</span>
+          </a>
+          <nav className="topnav" aria-label="Primary">
+            <button
+              type="button"
+              className={view === "home" ? "nav-link active" : "nav-link"}
+              aria-current={view === "home" ? "page" : undefined}
+              onClick={() => setView("home")}
+            >
+              Home
+            </button>
+            <button
+              type="button"
+              className={view === "mcp" ? "nav-link active" : "nav-link"}
+              aria-current={view === "mcp" ? "page" : undefined}
+              onClick={() => setView("mcp")}
+            >
+              Agent Chatbot
+            </button>
+          </nav>
+        </div>
+      </header>
+      <main id="main" className="page" tabIndex={-1}>
+        {view === "home" ? (
+          <>
+            <section className="hero">
+              <p className="eyebrow">AutoChart</p>
+              <h1>Chart comparison — chatbot and map</h1>
+              <p>
+                Backend at <strong>/api</strong>, MCP at <strong>/mcp</strong>. Map is limited to
+                Scale ≤ {MAX_SCALE.toLocaleString()}. Submit a lookup to zoom the map and show the
+                old ∩ new overlap.
+              </p>
+            </section>
+            <ChatBot onLookup={setLookup} />
+            <Suspense fallback={<p aria-live="polite">Loading map…</p>}>
+              <MapView focus={lookup} />
+            </Suspense>
+          </>
+        ) : (
+          <>
+            <section className="hero">
+              <p className="eyebrow">AutoChart / Agent</p>
+              <h1>Agent Chatbot</h1>
+            </section>
+            <MCPChat />
+          </>
+        )}
+      </main>
+    </>
   );
 }

@@ -15,7 +15,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    lookup: "LookupResponse | None" = None
+    lookup: LookupResponse | None = None
 
 
 class LookupRequest(BaseModel):
