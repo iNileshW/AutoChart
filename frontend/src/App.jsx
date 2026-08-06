@@ -219,24 +219,35 @@ export default function App() {
         Skip to main content
       </a>
       <header className="page-header">
-        <nav className="topnav" aria-label="Primary">
-          <button
-            type="button"
-            className={view === "home" ? "nav-link active" : "nav-link"}
-            aria-current={view === "home" ? "page" : undefined}
-            onClick={() => setView("home")}
+        <div className="page-header-inner">
+          <a
+            className="brand-lockup"
+            href="https://www.admiralty.co.uk/"
+            rel="noopener noreferrer"
+            aria-label="UK Hydrographic Office — Admiralty"
           >
-            Home
-          </button>
-          <button
-            type="button"
-            className={view === "mcp" ? "nav-link active" : "nav-link"}
-            aria-current={view === "mcp" ? "page" : undefined}
-            onClick={() => setView("mcp")}
-          >
-            Agent Chatbot
-          </button>
-        </nav>
+            <img src="./ukho-logo.svg" alt="" aria-hidden="true" />
+            <span className="brand-lockup-text">AutoChart</span>
+          </a>
+          <nav className="topnav" aria-label="Primary">
+            <button
+              type="button"
+              className={view === "home" ? "nav-link active" : "nav-link"}
+              aria-current={view === "home" ? "page" : undefined}
+              onClick={() => setView("home")}
+            >
+              Home
+            </button>
+            <button
+              type="button"
+              className={view === "mcp" ? "nav-link active" : "nav-link"}
+              aria-current={view === "mcp" ? "page" : undefined}
+              onClick={() => setView("mcp")}
+            >
+              Agent Chatbot
+            </button>
+          </nav>
+        </div>
       </header>
       <main id="main" className="page" tabIndex={-1}>
         {view === "home" ? (

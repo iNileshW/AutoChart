@@ -7,6 +7,8 @@
 
 AutoChart compares old and new UKHO geospatial navigation chart polygons and helps identify upgrade recommendations for customers. A single FastAPI process serves the REST API, an MCP JSON-RPC endpoint, and the built React SPA.
 
+**See also:** [Architecture diagrams](docs/architecture.md) · [Architectural Decision Records](docs/adr/) (gov.uk ADR framework).
+
 ## Architecture
 
 - **Frontend**: React + Vite in `frontend/`. Two views selected from a top nav: **Home** (chatbot + Leaflet map with old ∩ new overlay) and **MCP chatbot** (natural-language chat that calls `chart.answer` over MCP and shows a prose reply — no raw JSON). The `/api/overlap` REST endpoint and the `chart.overlap` MCP tool remain available for programmatic use.
