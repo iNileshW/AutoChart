@@ -26,7 +26,11 @@ PUBLIC_PATHS: set[str] = {
 def _is_public(path: str) -> bool:
     if path in PUBLIC_PATHS:
         return True
-    return path.startswith("/app-assets/") or path.startswith("/assets/")
+    return (
+        path.startswith("/app-assets/")
+        or path.startswith("/assets/")
+        or path.startswith("/grafana")
+    )
 
 
 async def api_key_middleware(request: Request, call_next):
