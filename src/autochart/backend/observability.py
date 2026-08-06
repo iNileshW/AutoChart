@@ -1,6 +1,8 @@
 """Observability wiring: Prometheus metrics, OpenTelemetry tracing, Sentry.
 
-All three are opt-in via environment variables. Called once from main.
+Prometheus metrics are on by default (disable with AUTOCHART_METRICS=0).
+Tracing is opt-in via OTEL_EXPORTER_OTLP_ENDPOINT, and Sentry via SENTRY_DSN.
+Called once from main.
 """
 
 from __future__ import annotations

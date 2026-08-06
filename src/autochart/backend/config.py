@@ -21,8 +21,8 @@ API_KEY_HEADER: str = os.getenv("AUTOCHART_API_KEY_HEADER", "X-API-Key")
 LOG_LEVEL: str = os.getenv("AUTOCHART_LOG_LEVEL", "INFO").upper()
 LOG_JSON: bool = os.getenv("AUTOCHART_LOG_JSON", "1").lower() in {"1", "true", "yes"}
 
-# Observability toggles. Metrics are always on; tracing + Sentry are opt-in
-# via environment variables.
+# Observability toggles. Metrics default to on (opt-out via AUTOCHART_METRICS=0);
+# tracing and Sentry are opt-in via their respective environment variables.
 METRICS_ENABLED: bool = os.getenv("AUTOCHART_METRICS", "1").lower() in {"1", "true", "yes"}
 OTEL_ENDPOINT: str | None = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") or None
 OTEL_SERVICE_NAME: str = os.getenv("OTEL_SERVICE_NAME", "autochart")
