@@ -180,7 +180,7 @@ export function MapView({ focus } = {}) {
         setOverlapError(e instanceof Error ? e.message : "Unknown error");
       });
     // focusKey stringifies focusNames so the effect only re-runs on a real change.
-  }, [focusKey, focusNames]);
+  }, [focusKey]);
 
   const defaultBounds = useMemo(() => {
     if (!data) return null;
