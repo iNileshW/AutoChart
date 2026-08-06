@@ -64,39 +64,41 @@ export function ChatBot() {
       <button type="button" onClick={submit} disabled={loading || !value.trim()}>
         {loading ? "Searching..." : "Ask"}
       </button>
-      <div className="reply">
-        {reply && <pre>{reply}</pre>}
-        {details && (
-          <div className="details">
-            <p>
-              <strong>Old matches:</strong> {details.old_matches.length} —{" "}
-              <strong>New matches:</strong> {details.new_matches.length}
-            </p>
-            <div className="match-cols">
-              <div>
-                <h4>Old</h4>
-                <ul>
-                  {details.old_matches.slice(0, 10).map((m, i) => (
-                    <li key={`o${i}`}>
-                      {m.PANEL_IDEN} — {m.PANEL_MAIN} (scale {m.SCALE ?? "n/a"})
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4>New</h4>
-                <ul>
-                  {details.new_matches.slice(0, 10).map((m, i) => (
-                    <li key={`n${i}`}>
-                      {m.Chart} / {m.Panel_ID} — {m.Panel_Name} (scale {m.Pan_Scale ?? "n/a"})
-                    </li>
-                  ))}
-                </ul>
+      {(reply || details) && (
+        <div className="reply">
+          {reply && <pre>{reply}</pre>}
+          {details && (
+            <div className="details">
+              <p>
+                <strong>Old matches:</strong> {details.old_matches.length} —{" "}
+                <strong>New matches:</strong> {details.new_matches.length}
+              </p>
+              <div className="match-cols">
+                <div>
+                  <h4>Old</h4>
+                  <ul>
+                    {details.old_matches.slice(0, 10).map((m, i) => (
+                      <li key={`o${i}`}>
+                        {m.PANEL_IDEN} — {m.PANEL_MAIN} (scale {m.SCALE ?? "n/a"})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4>New</h4>
+                  <ul>
+                    {details.new_matches.slice(0, 10).map((m, i) => (
+                      <li key={`n${i}`}>
+                        {m.Chart} / {m.Panel_ID} — {m.Panel_Name} (scale {m.Pan_Scale ?? "n/a"})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }
