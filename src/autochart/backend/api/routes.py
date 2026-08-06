@@ -19,7 +19,7 @@ from autochart.backend.schemas import (
     PanelListItem,
 )
 
-router = APIRouter(prefix="/api", tags=["api"])
+router = APIRouter(tags=["api"])
 
 
 @router.get("/health")
@@ -32,7 +32,7 @@ def lookup(payload: LookupRequest) -> LookupResponse:
     try:
         result = data_service.lookup(payload.mode, payload.value)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     return LookupResponse(**result)
 
 
@@ -63,9 +63,9 @@ def overlap(payload: OverlapRequest) -> OverlapResponse:
     try:
         result = plot_panel_overlap(payload.panel_main, max_scale=payload.max_scale)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
     except KeyError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
     return OverlapResponse(**result)
 
 
@@ -82,7 +82,7 @@ def _infer_intent(message: str) -> tuple[LookupMode, str] | None:
     kind = m.group(1).lower()
     value = (m.group(2) or "").strip()
     if not value:
-        tail = message[m.end():].strip().split()
+        tail = message[m.end() :].strip().split()
         value = tail[0] if tail else ""
     if not value:
         return None

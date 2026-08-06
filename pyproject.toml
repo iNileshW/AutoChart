@@ -1,8 +1,9 @@
 [project]
 name = "autochart"
 version = "0.1.0"
-description = "Add your description here"
+description = "UKHO chart comparison chatbot + API + MCP tools"
 readme = "README.md"
+license = { text = "MIT" }
 authors = [
     { name = "iNileshW", email = "33792419+iNileshW@users.noreply.github.com" }
 ]
@@ -14,6 +15,7 @@ dependencies = [
     "matplotlib>=3.11.1",
     "pandas>=3.0.5",
     "ruff>=0.16.1",
+    "structlog>=26.1.0",
     "uvicorn>=0.35.0",
 ]
 
@@ -30,10 +32,53 @@ dev = [
     "httpx>=0.28.1",
     "ipykernel>=7.3.0",
     "jupyter>=1.1.1",
+    "mypy>=2.3.0",
     "nbconvert>=7.17.1",
+    "nbstripout>=0.9.1",
+    "pre-commit>=4.6.1",
     "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q --strict-markers --cov=autochart --cov-report=term-missing --cov-fail-under=75"
+
+[tool.coverage.run]
+branch = true
+source = ["src/autochart"]
+omit = ["src/autochart/cli.py", "src/autochart/backend_runner.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["notebook.ipynb", ".venv", "frontend/node_modules"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "SIM",
+    "RUF",
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = []
+
+[tool.mypy]
+python_version = "3.13"
+files = ["src/autochart"]
+strict_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+ignore_missing_imports = true
+disable_error_code = ["import-untyped"]

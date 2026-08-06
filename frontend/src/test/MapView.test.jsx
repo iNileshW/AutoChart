@@ -23,8 +23,8 @@ vi.mock("react-leaflet", () => {
   };
 });
 
-// Import AFTER the mock so App.jsx picks up the stubbed react-leaflet.
-const { MapView } = await import("../App.jsx");
+// Import AFTER the mock so MapView.jsx picks up the stubbed react-leaflet.
+const { MapView } = await import("../MapView.jsx");
 
 const FC = (features = []) => ({ type: "FeatureCollection", features });
 

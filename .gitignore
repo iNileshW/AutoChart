@@ -13,3 +13,20 @@ wheels/
 data_original/
 practice.ipynb
 *.geojson
+
+# Test + coverage artefacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+
+# IDE and local .env
+.idea/
+.vscode/
+.env
+.env.local

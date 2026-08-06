@@ -1,5 +1,10 @@
 # AutoChart
 
+[![CI](https://github.com/iNileshW/AutoChart/actions/workflows/ci.yml/badge.svg)](https://github.com/iNileshW/AutoChart/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](pyproject.toml)
+[![Node 22](https://img.shields.io/badge/node-22-brightgreen.svg)](frontend/package.json)
+
 AutoChart compares old and new UKHO geospatial navigation chart polygons and helps identify upgrade recommendations for customers. A single FastAPI process serves the REST API, an MCP JSON-RPC endpoint, and the built React SPA.
 
 ## Architecture
@@ -133,6 +138,47 @@ Test coverage:
 - `tests/test_overlap.py` — `plot_panel_overlap` PNG magic bytes + metrics
 - `tests/test_api.py` — REST endpoints via `TestClient`
 - `tests/test_mcp.py` — JSON-RPC `tools/list` and `tools/call`
+
+## Docker
+
+```bash
+docker build -t autochart:local .
+docker compose up
+```
+
+The image is multi-stage: Node 22 builds the SPA, Python 3.13 serves it via `uvicorn`. It runs as a non-root user, mounts `/tmp` read-write only, and ships a `curl` health check. Configure via `.env` (see `.env.example`).
+
+## E2E tests (Playwright)
+
+Playwright is scaffolded but browsers are not downloaded by default.
+
+```bash
+cd frontend
+npm run e2e:install     # one-time, downloads chromium
+npm run e2e             # runs against AUTOCHART_E2E_BASE_URL (default http://127.0.0.1:8000)
+```
+
+The specs live in `frontend/e2e/`. CI wires `e2e:install` when needed.
+
+## Pre-commit
+
+```bash
+uv run pre-commit install
+uv run pre-commit run --all-files
+```
+
+The config runs ruff (lint + format), Prettier, ESLint on staged frontend files, and `nbstripout` to keep notebook diffs clean.
+
+## Environment
+
+See `.env.example` for the full list. Highlights:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `AUTOCHART_HOST` / `AUTOCHART_PORT` | `127.0.0.1` / `8000` | Uvicorn binding |
+| `AUTOCHART_ALLOWED_ORIGINS` | dev origins | CORS allow-list |
+| `AUTOCHART_API_KEY` | *(unset)* | Optional `X-API-Key` gate on `/api/*` and `/mcp` |
+| `AUTOCHART_LOG_LEVEL` / `AUTOCHART_LOG_JSON` | `INFO` / `1` | Structured logging via structlog |
 
 ## Notebook
 
