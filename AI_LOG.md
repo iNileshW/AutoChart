@@ -209,6 +209,41 @@ This file tracks code and configuration changes made by AI in this repository.
 ### Notes
 - Backend/MCP overlap functionality and its pytest coverage are untouched; only the UI surface was removed.
 
+## 2026-08-06 (Map zoom + overlap on chat lookup)
+
+### Summary
+- The ChatBot now drives the map: submitting a lookup zooms the map onto the matched panels, highlights them, and paints the old ∩ new intersection.
+
+### Added Files
+- (backend logic added in-place — no new source files)
+
+### Updated Files
+- src/autochart/backend/data.py — new `overlap_geojson(panel_names, max_scale)` returning a GeoJSON FeatureCollection with the old ∩ new intersection polygons (EPSG:4326), plus `bounds_4326`, `old_selected_4326`, `new_selected_4326`. `_select_by_names` helper for case-insensitive name filtering.
+- src/autochart/backend/overlap.py — replaced deprecated `unary_union` with `union_all()`.
+- src/autochart/backend/schemas.py — added `OverlapGeoJSONRequest`.
+- src/autochart/backend/api/routes.py — added `POST /api/overlap-geojson`.
+- tests/test_data.py — coverage for `overlap_geojson` (populated + empty).
+- tests/test_api.py — coverage for `/api/overlap-geojson`.
+- frontend/src/App.jsx
+  - `ChatBot` now accepts `onLookup(lookup)`, called with the returned lookup on success and `null` on failure.
+  - `MapView` accepts `focus` (a lookup response). It fetches `/api/overlap-geojson`, highlights matched features (thicker border, higher fill), and adds a green intersection overlay layer.
+  - `FocusController` (inner component, uses `useMap`) calls `map.fitBounds` when the overlap bounds arrive.
+  - `App` holds the lookup state and wires `ChatBot` ↔ `MapView`.
+- frontend/src/test/ChatBot.test.jsx — new test asserting `onLookup` is called with the returned payload.
+- frontend/src/test/MapView.test.jsx — new test asserting `/api/overlap-geojson` is called with the collected panel names when `focus` is provided; `useMap` stubbed in the `react-leaflet` mock.
+- README.md — endpoint table updated with `/api/overlap-geojson`.
+
+### Validation
+- `uv run pytest` → 27 passed, 1 warning (only starlette TestClient deprecation).
+- `cd frontend && npm test` → 9 passed.
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+
+### Notes
+- Frontend matching is done by panel name (`PANEL_MAIN` for old, `Panel_Name` for new). `Panel_ID` is not unique in the new dataset, so name matching is more stable.
+- The backend keeps the existing `/api/overlap` (PNG) endpoint for the MCP tool and for programmatic consumers; the map path uses the new GeoJSON endpoint.
+
 ## Ongoing Tracking Format
 Use this format for future entries:
 

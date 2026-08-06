@@ -67,6 +67,27 @@ describe("ChatBot", () => {
     });
   });
 
+  it("invokes onLookup with the returned lookup payload", async () => {
+    const lookup = {
+      mode: "chart_name",
+      value: "Looe",
+      old_matches: [],
+      new_matches: [],
+      new_chart_available: false,
+    };
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ reply: "No new chart available.", lookup }),
+    });
+    const onLookup = vi.fn();
+    const user = userEvent.setup();
+    render(<ChatBot onLookup={onLookup} />);
+    await user.click(screen.getByRole("button", { name: /ask/i }));
+    await waitFor(() => {
+      expect(onLookup).toHaveBeenCalledWith(lookup);
+    });
+  });
+
   it("disables the Ask button when the value is blank", async () => {
     const user = userEvent.setup();
     render(<ChatBot />);

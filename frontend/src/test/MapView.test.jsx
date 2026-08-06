@@ -19,6 +19,7 @@ vi.mock("react-leaflet", () => {
       <div data-testid="GeoJSON" data-feature-count={props.data?.features?.length ?? 0} />
     ),
     LayersControl,
+    useMap: () => ({ fitBounds: () => {} }),
   };
 });
 
@@ -94,6 +95,92 @@ describe("MapView", () => {
     }
 
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining("api/data?max_scale=30000"));
+  });
+
+  it("fetches overlap GeoJSON when focus is provided", async () => {
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          old: FC([
+            {
+              geometry: {
+                coordinates: [
+                  [
+                    [0, 0],
+                    [1, 0],
+                    [1, 1],
+                    [0, 1],
+                    [0, 0],
+                  ],
+                ],
+              },
+              properties: { PANEL_MAIN: "F Looe" },
+            },
+          ]),
+          new: FC([
+            {
+              geometry: {
+                coordinates: [
+                  [
+                    [0, 0],
+                    [1, 0],
+                    [1, 1],
+                    [0, 1],
+                    [0, 0],
+                  ],
+                ],
+              },
+              properties: { Panel_Name: "Looe" },
+            },
+          ]),
+          max_scale: 30000,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "Polygon",
+                coordinates: [
+                  [
+                    [0, 0],
+                    [1, 0],
+                    [1, 1],
+                    [0, 1],
+                    [0, 0],
+                  ],
+                ],
+              },
+            },
+          ],
+          bounds_4326: [0, 0, 1, 1],
+        }),
+      });
+
+    const focus = {
+      mode: "chart_name",
+      value: "Looe",
+      old_matches: [{ PANEL_MAIN: "F Looe" }],
+      new_matches: [{ Panel_Name: "Looe" }],
+      new_chart_available: true,
+    };
+
+    render(<MapView focus={focus} />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+    const [, overlapInit] = fetch.mock.calls[1];
+    expect(fetch.mock.calls[1][0]).toBe("api/overlap-geojson");
+    const body = JSON.parse(overlapInit.body);
+    expect(body.panel_names).toEqual(expect.arrayContaining(["F Looe", "Looe"]));
+    expect(body.max_scale).toBe(30000);
   });
 
   it("surfaces an error banner on non-2xx", async () => {

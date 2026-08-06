@@ -44,6 +44,22 @@ def test_list_panels_respects_scale_filter() -> None:
         assert p["scale"] is None or p["scale"] <= 30000
 
 
+def test_overlap_geojson_returns_intersection_and_bounds() -> None:
+    result = data.overlap_geojson(["Looe", "F Looe", "Looe Bay"])
+    assert result["bounds_4326"] is not None
+    minx, miny, maxx, maxy = result["bounds_4326"]
+    assert minx < maxx and miny < maxy
+    assert len(result["old_selected_4326"]["features"]) >= 1
+    assert len(result["new_selected_4326"]["features"]) >= 1
+    assert len(result["features"]) >= 1
+
+
+def test_overlap_geojson_empty_when_no_names() -> None:
+    result = data.overlap_geojson([])
+    assert result["bounds_4326"] is None
+    assert result["features"] == []
+
+
 def test_get_data_returns_geojson_feature_collections() -> None:
     payload = data.get_data(max_scale=30000)
     for key in ("old", "new"):

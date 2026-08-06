@@ -59,7 +59,7 @@ def plot_panel_overlap(
 
     old_target = gpd.GeoDataFrame(
         {OLD_NAME_COL: [panel_value]},
-        geometry=[old_selected.geometry.unary_union],
+        geometry=[old_selected.geometry.union_all()],
         crs=old_df.crs,
     )
 

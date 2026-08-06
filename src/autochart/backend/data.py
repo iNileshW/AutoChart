@@ -154,6 +154,80 @@ def get_data(max_scale: int | None = MAX_SCALE) -> dict[str, Any]:
     }
 
 
+def _select_by_names(
+    gdf: gpd.GeoDataFrame, col: str, names: list[Any]
+) -> gpd.GeoDataFrame:
+    if not names:
+        return gdf.iloc[0:0]
+    wanted = {str(x).strip().casefold() for x in names if x is not None and str(x).strip()}
+    if not wanted:
+        return gdf.iloc[0:0]
+    key = gdf[col].astype(str).str.strip().str.casefold()
+    return gdf[key.isin(wanted)]
+
+
+def overlap_geojson(
+    panel_names: list[Any] | None,
+    max_scale: int | None = MAX_SCALE,
+) -> dict[str, Any]:
+    """Intersection of old panels (by PANEL_MAIN) and new panels (by Panel_Name) matching
+    the supplied names, returned as GeoJSON in EPSG:4326.
+
+    Bounds are computed in EPSG:4326 for map consumption. The intersection itself
+    is computed in EPSG:27700 (metric) then projected back to WGS84.
+    """
+    old = _filter_scale(load_old(), OLD_SCALE_COL, max_scale)
+    new = _filter_scale(load_new(), NEW_SCALE_COL, max_scale)
+
+    names = panel_names or []
+    old_sel = _select_by_names(old, OLD_NAME_COL, names)
+    new_sel = _select_by_names(new, NEW_NAME_COL, names)
+
+    empty: dict[str, Any] = {
+        "type": "FeatureCollection",
+        "features": [],
+        "bounds_4326": None,
+        "old_selected_4326": {"type": "FeatureCollection", "features": []},
+        "new_selected_4326": {"type": "FeatureCollection", "features": []},
+    }
+    if old_sel.empty and new_sel.empty:
+        return empty
+
+    old_4326 = old_sel.to_crs("EPSG:4326") if not old_sel.empty else old_sel
+    new_4326 = new_sel.to_crs("EPSG:4326") if not new_sel.empty else new_sel
+
+    bounds: tuple[float, float, float, float] | None = None
+    if not old_4326.empty or not new_4326.empty:
+        parts = []
+        if not old_4326.empty:
+            parts.append(old_4326.total_bounds)
+        if not new_4326.empty:
+            parts.append(new_4326.total_bounds)
+        minx = min(p[0] for p in parts)
+        miny = min(p[1] for p in parts)
+        maxx = max(p[2] for p in parts)
+        maxy = max(p[3] for p in parts)
+        bounds = (float(minx), float(miny), float(maxx), float(maxy))
+
+    intersection_fc: dict[str, Any] = {"type": "FeatureCollection", "features": []}
+    if not old_sel.empty and not new_sel.empty:
+        old_m = old_sel.to_crs("EPSG:27700")
+        new_m = new_sel.to_crs("EPSG:27700")
+        old_geom = old_m.geometry.union_all()
+        new_geom = new_m.geometry.union_all()
+        inter = old_geom.intersection(new_geom)
+        if not inter.is_empty:
+            inter_gdf = gpd.GeoDataFrame(geometry=[inter], crs="EPSG:27700").to_crs("EPSG:4326")
+            intersection_fc = json.loads(inter_gdf.to_json(default=_json_default))
+
+    return {
+        **intersection_fc,
+        "bounds_4326": bounds,
+        "old_selected_4326": _gdf_to_geojson(old_sel) if not old_sel.empty else {"type": "FeatureCollection", "features": []},
+        "new_selected_4326": _gdf_to_geojson(new_sel) if not new_sel.empty else {"type": "FeatureCollection", "features": []},
+    }
+
+
 def list_panels(max_scale: int | None = MAX_SCALE) -> list[dict[str, Any]]:
     """Distinct PANEL_MAIN values available for overlap plotting."""
     old = _filter_scale(load_old(), OLD_SCALE_COL, max_scale)

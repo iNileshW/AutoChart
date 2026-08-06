@@ -13,6 +13,7 @@ from autochart.backend.schemas import (
     LookupMode,
     LookupRequest,
     LookupResponse,
+    OverlapGeoJSONRequest,
     OverlapRequest,
     OverlapResponse,
     PanelListItem,
@@ -47,6 +48,14 @@ def panels(
     max_scale: int | None = Query(default=data_service.MAX_SCALE, ge=0),
 ) -> list[PanelListItem]:
     return [PanelListItem(**p) for p in data_service.list_panels(max_scale=max_scale)]
+
+
+@router.post("/overlap-geojson")
+def overlap_geojson(payload: OverlapGeoJSONRequest) -> dict:
+    return data_service.overlap_geojson(
+        panel_names=payload.panel_names,
+        max_scale=payload.max_scale,
+    )
 
 
 @router.post("/overlap", response_model=OverlapResponse)

@@ -28,6 +28,7 @@ Everything lives under `/api`:
 | `GET`  | `/api/data?max_scale=30000` | Return old + new panel geometry as GeoJSON `FeatureCollection`s |
 | `POST` | `/api/lookup` | `{mode, value}` — modes: `chart_number`, `chart_name`, `chart_title`, `panel_id` |
 | `POST` | `/api/overlap` | `{panel_main, max_scale}` — returns base64 PNG + metrics from `plot_panel_overlap` |
+| `POST` | `/api/overlap-geojson` | `{panel_names[], max_scale}` — intersection polygons + bounds in EPSG:4326 for map consumers |
 | `POST` | `/api/chat` | Chatbot that infers `mode`/`value` from a natural sentence or explicit fields |
 
 Overlap and panel listing enforce `Scale <= 30000` by default.
