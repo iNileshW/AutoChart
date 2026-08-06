@@ -54,6 +54,31 @@ def test_overlap_geojson_returns_intersection_and_bounds() -> None:
     assert len(result["features"]) >= 1
 
 
+def test_answer_by_chart_number() -> None:
+    text = data.answer("1013")
+    assert isinstance(text, str)
+    assert "1013" in text
+    assert "new chart" in text.lower()
+
+
+def test_answer_by_name_returns_prose() -> None:
+    text = data.answer("Looe")
+    assert "Looe" in text
+    assert "panel" in text.lower()
+    # must be prose only — no JSON braces or quoted keys
+    assert "{" not in text and "}" not in text
+
+
+def test_answer_unknown_query_falls_back() -> None:
+    text = data.answer("zzz_never_matches_anything")
+    assert "couldn't find" in text.lower() or "no chart" in text.lower()
+
+
+def test_answer_empty_query_gives_hint() -> None:
+    text = data.answer("")
+    assert "chart" in text.lower()
+
+
 def test_overlap_geojson_empty_when_no_names() -> None:
     result = data.overlap_geojson([])
     assert result["bounds_4326"] is None

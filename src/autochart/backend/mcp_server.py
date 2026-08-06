@@ -74,6 +74,17 @@ TOOLS: list[dict[str, Any]] = [
         },
     },
     {
+        "name": "chart.answer",
+        "description": "Conversational summary for a user query about a chart (number, name, title, or panel id). Returns a single prose text — no raw JSON payload.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["query"],
+            "properties": {
+                "query": {"type": "string"},
+            },
+        },
+    },
+    {
         "name": "chart.list_panels",
         "description": "List old panels (PANEL_MAIN) available at or below max_scale.",
         "inputSchema": {
@@ -112,6 +123,10 @@ def _call_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
     if name == "chart.get_data":
         max_scale = args.get("max_scale", data_service.MAX_SCALE)
         return _text_result(data_service.get_data(max_scale=max_scale))
+    if name == "chart.answer":
+        query = args.get("query")
+        text = data_service.answer(query)
+        return {"content": [{"type": "text", "text": text}]}
     if name == "chart.list_panels":
         max_scale = args.get("max_scale", data_service.MAX_SCALE)
         return _text_result(data_service.list_panels(max_scale=max_scale))

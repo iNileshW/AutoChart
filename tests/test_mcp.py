@@ -24,6 +24,7 @@ def test_tools_list_advertises_expected_tools(client: TestClient) -> None:
         "chart.overlap_geojson",
         "chart.list_panels",
         "chart.compare",
+        "chart.answer",
     }:
         assert expected in names
 
@@ -38,6 +39,19 @@ def test_tools_call_lookup_returns_json_payload(client: TestClient) -> None:
     assert content[0]["type"] == "text"
     payload = json.loads(content[0]["text"])
     assert payload["mode"] == "chart_name"
+
+
+def test_tools_call_answer_returns_prose(client: TestClient) -> None:
+    body = _rpc(
+        client,
+        "tools/call",
+        params={"name": "chart.answer", "arguments": {"query": "1013"}},
+    )
+    content = body["result"]["content"]
+    assert content[0]["type"] == "text"
+    text = content[0]["text"]
+    assert "1013" in text
+    assert "{" not in text and "}" not in text
 
 
 def test_tools_call_overlap_geojson_returns_intersection(client: TestClient) -> None:

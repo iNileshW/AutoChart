@@ -3,31 +3,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MCPChat } from "../App.jsx";
 
-const TOOLS = [
-  {
-    name: "chart.lookup",
-    description: "Look up old/new chart panels.",
-    inputSchema: {
-      type: "object",
-      required: ["mode", "value"],
-      properties: {
-        mode: { type: "string" },
-        value: { type: "string" },
-      },
-    },
-  },
-  {
-    name: "chart.overlap_geojson",
-    description: "Intersection polygons.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        panel_names: { type: "array" },
-        max_scale: { type: ["integer", "null"], default: 30000 },
-      },
-    },
-  },
-];
+const ANSWER =
+  "Yes — a new chart is available for chart 1013. New chart identifier(s): GB1013. New panel(s): Helford River. Scale(s): 12500.";
 
 describe("MCPChat", () => {
   beforeEach(() => {
@@ -37,116 +14,92 @@ describe("MCPChat", () => {
     vi.unstubAllGlobals();
   });
 
-  it("loads the MCP tool catalogue and lists tools in the selector", async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ jsonrpc: "2.0", id: 1, result: { tools: TOOLS } }),
-    });
+  it("renders an empty chat thread on mount without hitting the network", () => {
     render(<MCPChat />);
-
-    await waitFor(() => {
-      expect(screen.getByRole("option", { name: "chart.lookup" })).toBeInTheDocument();
-    });
-    expect(screen.getByRole("option", { name: "chart.overlap_geojson" })).toBeInTheDocument();
-
-    const [firstUrl, firstInit] = fetch.mock.calls[0];
-    expect(firstUrl).toBe("mcp");
-    const body = JSON.parse(firstInit.body);
-    expect(body.method).toBe("tools/list");
+    expect(screen.getByText(/start the conversation/i)).toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("issues tools/call with the parsed arguments and renders text content", async () => {
-    fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ jsonrpc: "2.0", id: 1, result: { tools: TOOLS } }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          jsonrpc: "2.0",
-          id: 2,
-          result: {
-            content: [{ type: "text", text: JSON.stringify({ status: "ok", matches: 3 }) }],
-          },
-        }),
-      });
+  it("calls chart.answer with the typed query and renders the prose reply", async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 1,
+        result: { content: [{ type: "text", text: ANSWER }] },
+      }),
+    });
 
     const user = userEvent.setup();
     render(<MCPChat />);
 
-    await waitFor(() => {
-      expect(screen.getByRole("option", { name: "chart.lookup" })).toBeInTheDocument();
-    });
-
-    const textarea = screen.getByLabelText(/arguments/i);
-    await user.clear(textarea);
-    await user.click(textarea);
-    await user.paste('{"mode": "chart_name", "value": "Looe"}');
-
-    await user.click(screen.getByRole("button", { name: /call tool/i }));
+    const input = screen.getByPlaceholderText(/2345, looe/i);
+    await user.type(input, "chart 1013");
+    await user.click(screen.getByRole("button", { name: /send/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/"matches": 3/)).toBeInTheDocument();
+      expect(screen.getByText(ANSWER)).toBeInTheDocument();
     });
 
-    const call2 = fetch.mock.calls[1];
-    expect(call2[0]).toBe("mcp");
-    const body = JSON.parse(call2[1].body);
+    // User bubble echo
+    expect(screen.getByText("chart 1013")).toBeInTheDocument();
+
+    const [url, init] = fetch.mock.calls[0];
+    expect(url).toBe("mcp");
+    const body = JSON.parse(init.body);
     expect(body.method).toBe("tools/call");
-    expect(body.params.name).toBe("chart.lookup");
-    expect(body.params.arguments).toEqual({ mode: "chart_name", value: "Looe" });
+    expect(body.params.name).toBe("chart.answer");
+    expect(body.params.arguments).toEqual({ query: "chart 1013" });
   });
 
-  it("reports invalid JSON without issuing a request", async () => {
+  it("submits on Enter", async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ jsonrpc: "2.0", id: 1, result: { tools: TOOLS } }),
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 1,
+        result: { content: [{ type: "text", text: "OK." }] },
+      }),
     });
 
     const user = userEvent.setup();
     render(<MCPChat />);
-    await waitFor(() => {
-      expect(screen.getByRole("option", { name: "chart.lookup" })).toBeInTheDocument();
-    });
 
-    const textarea = screen.getByLabelText(/arguments/i);
-    await user.clear(textarea);
-    await user.type(textarea, "not json");
-
-    await user.click(screen.getByRole("button", { name: /call tool/i }));
+    const input = screen.getByPlaceholderText(/2345, looe/i);
+    await user.type(input, "2345{Enter}");
 
     await waitFor(() => {
-      expect(screen.getByText(/invalid json/i)).toBeInTheDocument();
+      expect(fetch).toHaveBeenCalledTimes(1);
     });
-    // Still only the tools/list call
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("OK.")).toBeInTheDocument();
   });
 
-  it("surfaces JSON-RPC errors", async () => {
-    fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ jsonrpc: "2.0", id: 1, result: { tools: TOOLS } }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          jsonrpc: "2.0",
-          id: 2,
-          error: { code: -32602, message: "chart.lookup requires 'mode' and 'value'" },
-        }),
-      });
+  it("shows a friendly error when the MCP call fails", async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 1,
+        error: { code: -32000, message: "boom" },
+      }),
+    });
 
     const user = userEvent.setup();
     render(<MCPChat />);
-    await waitFor(() => {
-      expect(screen.getByRole("option", { name: "chart.lookup" })).toBeInTheDocument();
-    });
+    await user.type(screen.getByPlaceholderText(/2345, looe/i), "hi");
+    await user.click(screen.getByRole("button", { name: /send/i }));
 
-    await user.click(screen.getByRole("button", { name: /call tool/i }));
     await waitFor(() => {
-      expect(screen.getByText(/chart.lookup requires/i)).toBeInTheDocument();
+      expect(screen.getByText(/sorry —.*boom/i)).toBeInTheDocument();
     });
+  });
+
+  it("does not submit when the input is empty", async () => {
+    const user = userEvent.setup();
+    render(<MCPChat />);
+    const button = screen.getByRole("button", { name: /send/i });
+    expect(button).toBeDisabled();
+    await user.click(button);
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

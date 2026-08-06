@@ -289,6 +289,34 @@ This file tracks code and configuration changes made by AI in this repository.
 - User-event's `.type()` interprets `{...}` as escape sequences, so the "issues tools/call" test uses `.paste()` to insert raw JSON.
 - Home flow (Chatbot → MapView zoom + overlap) is unchanged.
 
+## 2026-08-06 (Conversational MCP chatbot)
+
+### Summary
+- Reshape the MCP chatbot: no more direct tool-call UI or raw JSON output. Users type a natural-language chart query, backend parses it and returns a single prose sentence via a new `chart.answer` MCP tool.
+
+### Updated Files
+- src/autochart/backend/data.py — new `answer(query)` helper + `_summarise_matches` prose formatter. Parses digit blocks as chart numbers, tokens containing `_` and a digit as panel IDs, otherwise falls back to name search. Returns a plain sentence.
+- src/autochart/backend/mcp_server.py — new `chart.answer` MCP tool (advertised in `tools/list`, dispatched in `_call_tool`).
+- tests/test_data.py — coverage for `answer` (chart number, name, unknown, empty).
+- tests/test_mcp.py — `tools/list` asserts on `chart.answer`; new `test_tools_call_answer_returns_prose` verifies the returned text is prose (no `{` or `}`).
+- frontend/src/App.jsx
+  - `MCPChat` rewritten: chat thread with user + assistant bubbles, an input, Enter-to-send. Only calls `chart.answer` via the existing `mcpCall` helper. Removed the tool selector, JSON textarea, `sampleArgsFor`, and result-content rendering.
+  - `App` view toggle unchanged; MCP tab now shows the conversational widget.
+- frontend/src/styles.css — new `.chat-thread`, `.chat-msg`, `.chat-user`, `.chat-assistant`, `.chat-role`, `.sr-only`.
+- frontend/src/test/MCPChat.test.jsx — rewritten to cover: empty mount, chart.answer request body + prose render, Enter submits, JSON-RPC error message surfaces, empty input disables send.
+- README.md — MCP tool list mentions `chart.answer`; Home/MCP nav description updated.
+
+### Validation
+- `uv run pytest` → 34 passed, 1 warning.
+- `cd frontend && npm test` → 14 passed.
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+- Live `POST /mcp chart.answer {"query": "2345"}` → prose string with panel names and scales, no raw JSON.
+
+### Notes
+- The existing programmatic MCP tools (`chart.lookup`, `chart.overlap`, `chart.overlap_geojson`, `chart.get_data`, `chart.list_panels`, `chart.compare`) remain untouched for scripting and agent use; only the frontend surface changed.
+
 ## Ongoing Tracking Format
 Use this format for future entries:
 

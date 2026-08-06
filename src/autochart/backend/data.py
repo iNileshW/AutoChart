@@ -228,6 +228,80 @@ def overlap_geojson(
     }
 
 
+def _summarise_matches(subject: str, result: dict[str, Any]) -> str:
+    old = result.get("old_matches") or []
+    new = result.get("new_matches") or []
+    parts: list[str] = []
+    if new:
+        charts = sorted({str(m.get("Chart")) for m in new if m.get("Chart")})
+        names = sorted({str(m.get("Panel_Name")) for m in new if m.get("Panel_Name")})
+        scales = sorted(
+            {int(m["Pan_Scale"]) for m in new if m.get("Pan_Scale") is not None}
+        )
+        parts.append(f"Yes — a new chart is available for {subject}.")
+        if charts:
+            parts.append(f"New chart identifier(s): {', '.join(charts)}.")
+        if names:
+            head = ", ".join(names[:5])
+            more = f" (+{len(names) - 5} more)" if len(names) > 5 else ""
+            parts.append(f"New panel(s): {head}{more}.")
+        if scales:
+            parts.append(f"Scale(s): {', '.join(str(s) for s in scales)}.")
+    else:
+        parts.append(f"No new chart is currently available for {subject}.")
+
+    if old:
+        panels = sorted({str(m.get("PANEL_MAIN")) for m in old if m.get("PANEL_MAIN")})
+        idens = sorted({str(m.get("PANEL_IDEN")) for m in old if m.get("PANEL_IDEN")})
+        head = ", ".join(panels[:5])
+        more = f" (+{len(panels) - 5} more)" if len(panels) > 5 else ""
+        parts.append(
+            f"Existing old chart coverage: {len(old)} panel(s) — {head}{more}."
+        )
+        if len(idens) <= 8:
+            parts.append(f"Panel IDs: {', '.join(idens)}.")
+
+    return " ".join(parts)
+
+
+CHART_DIGIT_RE = re.compile(r"\b(\d{3,})\b")
+
+
+def answer(query: str | None) -> str:
+    """Conversational summary for a user query — returns a single prose string."""
+    q = (query or "").strip()
+    if not q:
+        return (
+            "Ask about a chart by number, name, title, or panel id — for example "
+            "'2345', 'Looe', or 'panel 0147_6'."
+        )
+
+    digit_match = CHART_DIGIT_RE.search(q)
+    if digit_match:
+        digits = digit_match.group(1)
+        r = lookup("chart_number", digits)
+        if r["old_matches"] or r["new_matches"]:
+            return _summarise_matches(f"chart {digits}", r)
+
+    # Look for a panel-id-like token (contains an underscore and a digit)
+    for token in q.split():
+        cleaned = token.strip(".,;:!?")
+        if "_" in cleaned and any(c.isdigit() for c in cleaned):
+            r = lookup("panel_id", cleaned)
+            if r["old_matches"] or r["new_matches"]:
+                return _summarise_matches(f"panel {cleaned}", r)
+
+    # Fall back to a name/title search on the whole query
+    r = lookup("chart_name", q)
+    if r["old_matches"] or r["new_matches"]:
+        return _summarise_matches(f"'{q}'", r)
+
+    return (
+        f"I couldn't find any charts matching '{q}'. "
+        "Try a chart number like 2345, a chart name like 'Looe', or a panel id like '0147_6'."
+    )
+
+
 def list_panels(max_scale: int | None = MAX_SCALE) -> list[dict[str, Any]]:
     """Distinct PANEL_MAIN values available for overlap plotting."""
     old = _filter_scale(load_old(), OLD_SCALE_COL, max_scale)

@@ -4,7 +4,7 @@ AutoChart compares old and new UKHO geospatial navigation chart polygons and hel
 
 ## Architecture
 
-- **Frontend**: React + Vite in `frontend/`. Two views selected from a top nav: **Home** (chatbot + Leaflet map with old ∩ new overlay) and **MCP chatbot** (direct JSON-RPC tool caller against `/mcp`). The `/api/overlap` REST endpoint and the `chart.overlap` MCP tool remain available for programmatic use.
+- **Frontend**: React + Vite in `frontend/`. Two views selected from a top nav: **Home** (chatbot + Leaflet map with old ∩ new overlay) and **MCP chatbot** (natural-language chat that calls `chart.answer` over MCP and shows a prose reply — no raw JSON). The `/api/overlap` REST endpoint and the `chart.overlap` MCP tool remain available for programmatic use.
 - **Backend API**: FastAPI in `src/autochart/backend/` (data + overlap service layer, REST routes).
 - **MCP endpoint**: JSON-RPC 2.0 tools mounted at `/mcp`, sharing the same service layer as the REST API.
 - **Data**: chart polygons loaded from GeoJSON exports of `data_original/*.shp` (see `src/autochart/backend/data.py`).
@@ -43,6 +43,7 @@ Tools:
 - `chart.list_panels` — same as `/api/panels`
 - `chart.overlap` — returns a `text` + `image/png` content pair
 - `chart.overlap_geojson` — same semantics as `/api/overlap-geojson` (intersection polygons + bounds)
+- `chart.answer` — conversational summary for a free-text query about a chart (number, name, title, or panel id). Returns a single prose string, no raw JSON.
 - `chart.compare` — alias for `chart.overlap`
 
 Example:

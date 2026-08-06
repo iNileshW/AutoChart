@@ -326,147 +326,89 @@ async function mcpCall(method, params) {
   return body.result;
 }
 
-function sampleArgsFor(tool) {
-  if (!tool?.inputSchema?.properties) return "{}";
-  const sample = {};
-  for (const [key, schema] of Object.entries(tool.inputSchema.properties)) {
-    if (schema?.default !== undefined) {
-      sample[key] = schema.default;
-    } else if (
-      Array.isArray(schema?.type) ? schema.type.includes("string") : schema?.type === "string"
-    ) {
-      sample[key] = "";
-    } else if (schema?.type === "array") {
-      sample[key] = [];
-    } else if (schema?.type === "integer" || schema?.type === "number") {
-      sample[key] = 0;
-    } else {
-      sample[key] = null;
-    }
-  }
-  return JSON.stringify(sample, null, 2);
+function extractText(result) {
+  const chunks = result?.content ?? [];
+  return chunks
+    .filter((c) => c.type === "text" && typeof c.text === "string")
+    .map((c) => c.text)
+    .join("\n");
 }
 
 export function MCPChat() {
-  const [tools, setTools] = useState([]);
-  const [toolsError, setToolsError] = useState(null);
-  const [selected, setSelected] = useState("");
-  const [argsText, setArgsText] = useState("{}");
-  const [result, setResult] = useState(null);
-  const [callError, setCallError] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    mcpCall("tools/list")
-      .then((r) => {
-        if (!alive) return;
-        const list = r?.tools ?? [];
-        setTools(list);
-        if (list.length > 0) {
-          setSelected(list[0].name);
-          setArgsText(sampleArgsFor(list[0]));
-        }
-      })
-      .catch((e) => alive && setToolsError(e.message));
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  const selectedTool = useMemo(
-    () => tools.find((t) => t.name === selected) ?? null,
-    [tools, selected],
-  );
-
-  const changeTool = (name) => {
-    setSelected(name);
-    const tool = tools.find((t) => t.name === name) ?? null;
-    setArgsText(sampleArgsFor(tool));
-    setResult(null);
-    setCallError(null);
-  };
-
   const submit = async () => {
+    const query = input.trim();
+    if (!query || loading) return;
+    setInput("");
+    const userMsg = { role: "user", text: query };
+    setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
-    setCallError(null);
-    setResult(null);
-    let parsed;
     try {
-      parsed = argsText.trim() === "" ? {} : JSON.parse(argsText);
+      const result = await mcpCall("tools/call", {
+        name: "chart.answer",
+        arguments: { query },
+      });
+      const text = extractText(result) || "(no response)";
+      setMessages((prev) => [...prev, { role: "assistant", text }]);
     } catch (e) {
-      setCallError(`Invalid JSON: ${e.message}`);
-      setLoading(false);
-      return;
-    }
-    try {
-      const r = await mcpCall("tools/call", { name: selected, arguments: parsed });
-      setResult(r);
-    } catch (e) {
-      setCallError(e.message);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: `Sorry — ${e instanceof Error ? e.message : "unknown error"}.` },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
+  };
+
   return (
     <section className="panel">
-      <h2>MCP chatbot — direct tool call</h2>
+      <h2>MCP chatbot</h2>
       <p className="muted">
-        Issues JSON-RPC calls against <strong>/mcp</strong>. Pick a tool, edit the arguments, and
-        submit. Response is shown raw; images are rendered inline.
+        Ask about a chart by number, name, title, or panel id — e.g. <em>2345</em>, <em>Looe</em>,
+        or <em>panel 0147_6</em>. Answers come from the <strong>chart.answer</strong> MCP tool.
       </p>
-      {toolsError && <p className="error">Failed to load tools: {toolsError}</p>}
-      <div className="row">
-        <label htmlFor="mcp-tool">Tool</label>
-        <select id="mcp-tool" value={selected} onChange={(e) => changeTool(e.target.value)}>
-          {tools.map((t) => (
-            <option key={t.name} value={t.name}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+      <div className="chat-thread" role="log" aria-live="polite">
+        {messages.length === 0 && (
+          <p className="muted chat-empty">Start the conversation with a chart reference.</p>
+        )}
+        {messages.map((m, i) => (
+          <div key={`m${i}`} className={`chat-msg chat-${m.role}`}>
+            <span className="chat-role">{m.role === "user" ? "You" : "MCP"}</span>
+            <p>{m.text}</p>
+          </div>
+        ))}
+        {loading && (
+          <div className="chat-msg chat-assistant">
+            <span className="chat-role">MCP</span>
+            <p className="muted">Thinking...</p>
+          </div>
+        )}
       </div>
-      {selectedTool?.description && <p className="muted">{selectedTool.description}</p>}
       <div className="row">
-        <label htmlFor="mcp-args">Arguments (JSON)</label>
+        <label htmlFor="mcp-query" className="sr-only">
+          Your message
+        </label>
+        <input
+          id="mcp-query"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="e.g. 2345, Looe, panel 0147_6"
+        />
       </div>
-      <textarea
-        id="mcp-args"
-        rows={8}
-        value={argsText}
-        onChange={(e) => setArgsText(e.target.value)}
-        spellCheck={false}
-      />
-      <button type="button" onClick={submit} disabled={loading || !selected}>
-        {loading ? "Calling..." : "Call tool"}
+      <button type="button" onClick={submit} disabled={loading || !input.trim()}>
+        {loading ? "Sending..." : "Send"}
       </button>
-      {callError && <p className="error">{callError}</p>}
-      {result && (
-        <div className="reply">
-          {(result.content || []).map((c, i) => {
-            if (c.type === "text") {
-              let pretty = c.text;
-              try {
-                pretty = JSON.stringify(JSON.parse(c.text), null, 2);
-              } catch {
-                /* leave as-is */
-              }
-              return <pre key={`c${i}`}>{pretty}</pre>;
-            }
-            if (c.type === "image" && c.data) {
-              return (
-                <img
-                  key={`c${i}`}
-                  src={`data:${c.mimeType || "image/png"};base64,${c.data}`}
-                  alt={`MCP result ${i}`}
-                />
-              );
-            }
-            return <pre key={`c${i}`}>{JSON.stringify(c, null, 2)}</pre>;
-          })}
-        </div>
-      )}
     </section>
   );
 }
