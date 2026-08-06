@@ -33,6 +33,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 # Copy application sources
+COPY README.md ./
 COPY src ./src
 COPY my_file_gdf_old.geojson my_file_gdf_new.geojson ./
 RUN uv sync --frozen --no-dev
