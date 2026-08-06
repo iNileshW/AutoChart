@@ -3,7 +3,7 @@ services:
     image: docker.io/prom/prometheus:v3.1.0
     container_name: autochart-prometheus
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro,z
     extra_hosts:
