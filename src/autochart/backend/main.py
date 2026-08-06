@@ -49,6 +49,7 @@ async def request_context(request: Request, call_next):
 app.middleware("http")(api_key_middleware)
 app.middleware("http")(request_context)
 
+
 @app.get("/docs", include_in_schema=False, response_model=None)
 def swagger_ui() -> HTMLResponse:
     # Use a relative openapi URL so /docs works both directly and through a
