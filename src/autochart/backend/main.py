@@ -23,6 +23,7 @@ from autochart.backend.security import api_key_middleware
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
+PRESENTATION_DIR = REPO_ROOT / "docs" / "presentation"
 
 log = get_logger("autochart.http")
 
@@ -81,6 +82,13 @@ app.include_router(mcp_router)
 
 if grafana_enabled():
     app.include_router(grafana_router)
+
+if PRESENTATION_DIR.is_dir():
+    app.mount(
+        "/presentation",
+        StaticFiles(directory=PRESENTATION_DIR, html=True),
+        name="presentation",
+    )
 
 
 @app.get("/health")

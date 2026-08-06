@@ -30,6 +30,7 @@ def _is_public(path: str) -> bool:
         path.startswith("/app-assets/")
         or path.startswith("/assets/")
         or path.startswith("/grafana")
+        or path.startswith("/presentation")
     )
 
 
