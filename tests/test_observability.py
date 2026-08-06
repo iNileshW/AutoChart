@@ -13,6 +13,7 @@ def _auth_headers() -> dict[str, str]:
 def _get(client: TestClient, path: str):
     return client.get(path, headers=_auth_headers())
 
+
 def test_livez(client: TestClient) -> None:
     r = _get(client, "/livez")
     assert r.status_code == 200
