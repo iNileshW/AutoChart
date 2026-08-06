@@ -13,6 +13,8 @@ from pydantic import BaseModel
 
 from autochart.backend.api.routes import router as api_router
 from autochart.backend.config import ALLOWED_ORIGINS
+from autochart.backend.grafana_proxy import is_enabled as grafana_enabled
+from autochart.backend.grafana_proxy import router as grafana_router
 from autochart.backend.logging_setup import get_logger
 from autochart.backend.mcp_server import router as mcp_router
 from autochart.backend.observability import install as install_observability
@@ -21,6 +23,7 @@ from autochart.backend.security import api_key_middleware
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
+PRESENTATION_DIR = REPO_ROOT / "docs" / "presentation"
 
 log = get_logger("autochart.http")
 
@@ -76,6 +79,16 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api")
 app.include_router(api_router, prefix="/api/v1")
 app.include_router(mcp_router)
+
+if grafana_enabled():
+    app.include_router(grafana_router)
+
+if PRESENTATION_DIR.is_dir():
+    app.mount(
+        "/presentation",
+        StaticFiles(directory=PRESENTATION_DIR, html=True),
+        name="presentation",
+    )
 
 
 @app.get("/health")

@@ -7,7 +7,7 @@
 
 AutoChart compares old and new UKHO geospatial navigation chart polygons and helps identify upgrade recommendations for customers. A single FastAPI process serves the REST API, an MCP JSON-RPC endpoint, and the built React SPA.
 
-**See also:** [Architecture diagrams](docs/architecture.md) · [Architectural Decision Records](docs/adr/) (gov.uk ADR framework).
+**See also:** [Architecture diagrams](docs/architecture.md) · [Architectural Decision Records](docs/adr/) (gov.uk ADR framework) · [Presentation](docs/presentation/) (Reveal.js).
 
 ## Architecture
 
@@ -182,6 +182,27 @@ The config runs ruff (lint + format), Prettier, ESLint on staged frontend files,
 
 See [ADR 0003](docs/adr/0003-observability-baseline.md) for the rationale.
 
+### Grafana + Prometheus (local stack)
+
+```bash
+cd deploy/observability
+docker compose up -d      # starts Prometheus (:9090) + Grafana (:3000)
+```
+
+Prometheus scrapes the backend at `host.docker.internal:8000/metrics` every 5s. Grafana auto-provisions a Prometheus datasource + an "AutoChart — Overview" dashboard (request rate, p50/p95 latency, status class, memory, CPU, error rate).
+
+**Direct access**: http://localhost:3000 (anonymous viewer; admin/admin for edit).
+
+**Behind the lab reverse proxy** (only port 8000 is exposed): start Grafana with `GF_PROXY_SUBPATH=/proxy/8000/grafana/`, then run the backend with:
+
+```bash
+AUTOCHART_GRAFANA_UPSTREAM=http://127.0.0.1:3000 \
+AUTOCHART_GRAFANA_UPSTREAM_PREFIX=/proxy/8000 \
+uv run autochart-api
+```
+
+FastAPI reverse-proxies `/grafana/*` to the container and prepends the stripped prefix so Grafana's `serve_from_sub_path` matches. Dashboard URL: `https://<host>/proxy/8000/grafana/d/autochart-overview/autochart-overview`.
+
 ## Environment
 
 See `.env.example` for the full list. Highlights:
@@ -195,6 +216,7 @@ See `.env.example` for the full list. Highlights:
 | `AUTOCHART_METRICS` | `1` | Toggle the `/metrics` Prometheus endpoint |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` / `OTEL_SERVICE_NAME` | *(unset)* / `autochart` | OTLP tracing exporter |
 | `SENTRY_DSN` / `SENTRY_ENVIRONMENT` / `SENTRY_TRACES_SAMPLE_RATE` | *(unset)* / `development` / `0.0` | Sentry error + trace capture |
+| `AUTOCHART_GRAFANA_UPSTREAM` / `AUTOCHART_GRAFANA_UPSTREAM_PREFIX` | *(unset)* / `""` | Mount `/grafana/*` as a reverse proxy in front of a local Grafana |
 
 ## Notebook
 
