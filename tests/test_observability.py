@@ -38,12 +38,12 @@ def test_web_vital_endpoint_accepts_report(client: TestClient) -> None:
     r = client.post(
         "/api/telemetry",
         json={"name": "LCP", "value": 1234.5, "rating": "good", "id": "abc"},
-        headers=_AUTH_HEADERS,
+        headers=_auth_headers(),
     )
     assert r.status_code == 204
     assert r.content == b""
 
 
 def test_web_vital_endpoint_rejects_bad_payload(client: TestClient) -> None:
-    r = client.post("/api/telemetry", json={"name": "LCP"}, headers=_AUTH_HEADERS)
+    r = client.post("/api/telemetry", json={"name": "LCP"}, headers=_auth_headers())
     assert r.status_code == 422
