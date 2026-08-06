@@ -27,7 +27,7 @@ services:
       # The FastAPI backend proxies /grafana/* here when
       # AUTOCHART_GRAFANA_UPSTREAM=http://127.0.0.1:3000 is set.
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
-      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s${GF_PROXY_SUBPATH:-/grafana/}"
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s${GF_PROXY_SUBPATH:-/}"
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro,z
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro,z
