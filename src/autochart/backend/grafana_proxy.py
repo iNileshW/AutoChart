@@ -87,9 +87,10 @@ if is_enabled():
         except httpx.RequestError as exc:  # pragma: no cover - network dependent
             raise HTTPException(status_code=502, detail=f"Grafana upstream error: {exc}") from exc
 
+        response_headers = dict(_clean_headers(upstream.headers))
         return StreamingResponse(
             upstream.aiter_raw(),
             status_code=upstream.status_code,
-            headers=_clean_headers(upstream.headers),
+            headers=response_headers,
             background=BackgroundTask(upstream.aclose),
         )
