@@ -7,7 +7,7 @@
 
 AutoChart compares old and new UKHO geospatial navigation chart polygons and helps identify upgrade recommendations for customers. A single FastAPI process serves the REST API, an MCP JSON-RPC endpoint, and the built React SPA.
 
-**See also:** [Architecture diagrams](docs/architecture.md) · [Architectural Decision Records](docs/adr/) (gov.uk ADR framework).
+**See also:** [Architecture diagrams](docs/architecture.md) · [Architectural Decision Records](docs/adr/) (gov.uk ADR framework) · [Presentation](docs/presentation/) (Reveal.js).
 
 ## Architecture
 

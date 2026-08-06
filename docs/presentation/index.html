@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoChart — graduation project presentation</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      id="reveal-theme"
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css"
+    />
+
+    <style>
+      :root {
+        --admiralty-navy: #001b5f;
+        --admiralty-marine: #0090d4;
+        --admiralty-gold: #f2a900;
+        --admiralty-red: #e30613;
+        --ink: #26374a;
+        --muted: #4b5563;
+      }
+
+      .reveal {
+        font-family: Arial, "Helvetica Neue", sans-serif;
+        color: var(--ink);
+      }
+      .reveal .slides section {
+        text-align: left;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3,
+      .reveal h4 {
+        color: var(--admiralty-navy);
+        text-transform: none;
+        letter-spacing: 0;
+      }
+      .reveal h1 {
+        font-size: 2.4rem;
+      }
+      .reveal h2 {
+        font-size: 1.9rem;
+      }
+      .reveal h3 {
+        font-size: 1.35rem;
+      }
+      .reveal em {
+        color: var(--admiralty-marine);
+        font-style: normal;
+        font-weight: 700;
+      }
+      .reveal code {
+        background: #f3f2f1;
+        color: var(--admiralty-navy);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.85em;
+      }
+      .reveal pre code {
+        padding: 0.6em 1em;
+        font-size: 0.65em;
+        line-height: 1.35;
+      }
+      .reveal ul,
+      .reveal ol {
+        line-height: 1.5;
+      }
+      .reveal .eyebrow {
+        color: var(--admiralty-marine);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+      .reveal .tag {
+        display: inline-block;
+        background: var(--admiralty-navy);
+        color: #fff;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-right: 6px;
+      }
+      .reveal .tag.marine {
+        background: var(--admiralty-marine);
+      }
+      .reveal .tag.gold {
+        background: var(--admiralty-gold);
+        color: var(--admiralty-navy);
+      }
+      .reveal .tag.red {
+        background: var(--admiralty-red);
+      }
+
+      .cover {
+        background: linear-gradient(135deg, var(--admiralty-navy) 0%, #003a99 100%);
+        color: #fff !important;
+        padding: 2rem 3rem !important;
+        border-radius: 8px;
+      }
+      .cover h1,
+      .cover h2,
+      .cover h3 {
+        color: #fff;
+      }
+      .cover .logo {
+        max-height: 60px;
+        margin-bottom: 1.2rem;
+      }
+      .cover .marine-strip {
+        height: 6px;
+        width: 120px;
+        background: var(--admiralty-marine);
+        margin: 1rem 0;
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      .kpi {
+        border-left: 4px solid var(--admiralty-marine);
+        background: #f8fbff;
+        padding: 0.75rem 1rem;
+      }
+      .kpi .num {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--admiralty-navy);
+      }
+      .kpi .lbl {
+        color: var(--muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .beacon {
+        border-left: 8px solid var(--admiralty-gold);
+        padding: 1rem 1.25rem;
+        background: #fff8e5;
+      }
+      .beacon strong {
+        color: var(--admiralty-navy);
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        align-items: start;
+      }
+
+      .mermaid {
+        background: #fff;
+      }
+
+      .footer {
+        position: fixed;
+        bottom: 12px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 0.7rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- 1. Cover -->
+        <section class="cover">
+          <img class="logo" src="ukho-logo.svg" alt="UK Hydrographic Office" />
+          <div class="marine-strip"></div>
+          <p class="eyebrow" style="color: #f2a900">Graduation project</p>
+          <h1>AutoChart</h1>
+          <h3 style="font-weight: 400">
+            A chatbot that tells UKHO customers whether their paper chart is out of date.
+          </h3>
+          <p style="margin-top: 2rem">
+            <span class="tag gold">FastAPI</span>
+            <span class="tag marine">React</span>
+            <span class="tag">MCP</span>
+            <span class="tag">Geopandas</span>
+            <span class="tag red">Leaflet</span>
+          </p>
+        </section>
+
+        <!-- 2. Problem -->
+        <section>
+          <p class="eyebrow">Problem</p>
+          <h2>UK boat owners have no way to know their chart is stale</h2>
+          <ul>
+            <li>
+              UKHO publishes new editions as coasts, wrecks, buoys and depths change — real
+              ocean demographics keep shifting.
+            </li>
+            <li>
+              Fishermen and leisure sailors currently rely on the shop or word of mouth to
+              decide when to reprint.
+            </li>
+            <li>
+              A wrong decision means either wasted money or unsafe navigation on outdated
+              soundings.
+            </li>
+          </ul>
+        </section>
+
+        <!-- 3. What we built -->
+        <section>
+          <p class="eyebrow">What was built</p>
+          <h2>One FastAPI process, three surfaces</h2>
+          <div class="mermaid">
+            flowchart LR U[UKHO customer]:::actor -->|HTTPS| P[Reverse proxy] Agent[AI /
+            MCP client]:::actor -->|JSON-RPC| P P --> App subgraph App[FastAPI process]
+            SPA[React + Vite SPA]:::svc REST[/api/v1/*]:::svc MCP[/mcp JSON-RPC]:::svc
+            SVC[Service layer<br/>data.py • overlap.py]:::svc SPA --- REST REST --> SVC
+            MCP --> SVC end SVC -->|reads| GJ[(GeoJSON of old + new panels)]:::data
+            classDef actor fill:#e5edff,stroke:#001b5f,color:#001b5f classDef svc
+            fill:#ffffff,stroke:#0090d4,color:#001b5f classDef data
+            fill:#fff5db,stroke:#f2a900,color:#26374a
+          </div>
+        </section>
+
+        <!-- 4. Backend -->
+        <section>
+          <p class="eyebrow">Backend</p>
+          <h2>REST + MCP sharing one service layer</h2>
+          <div class="two-col">
+            <div>
+              <h3>REST</h3>
+              <ul>
+                <li><code>POST /api/v1/lookup</code> — chart number / name / title / panel id</li>
+                <li><code>POST /api/v1/chat</code> — chatbot with intent inference</li>
+                <li><code>GET  /api/v1/data</code> — GeoJSON for the map</li>
+                <li><code>POST /api/v1/overlap</code> — matplotlib PNG</li>
+                <li><code>POST /api/v1/overlap-geojson</code> — intersection polygons</li>
+              </ul>
+            </div>
+            <div>
+              <h3>MCP tools <span class="tag marine">JSON-RPC 2.0</span></h3>
+              <ul>
+                <li><code>chart.answer</code> — prose reply for the Agent Chat UI</li>
+                <li><code>chart.lookup</code></li>
+                <li><code>chart.overlap</code> / <code>chart.overlap_geojson</code></li>
+                <li><code>chart.get_data</code> / <code>chart.list_panels</code></li>
+                <li><code>chart.compare</code> — alias for compatibility</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. Frontend -->
+        <section>
+          <p class="eyebrow">Frontend</p>
+          <h2>Two views for two audiences</h2>
+          <div class="two-col">
+            <div>
+              <h3>Home</h3>
+              <ul>
+                <li>Chatbot: mode + value ⇒ REST lookup</li>
+                <li>Leaflet map (react-leaflet, lazy-loaded)</li>
+                <li>Old panels (navy) • new panels (orange)</li>
+                <li>Green <em>old ∩ new</em> overlay computed on demand</li>
+                <li>Fits map bounds to the matched region</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Agent Chatbot</h3>
+              <ul>
+                <li>Natural-language box: <em>“2345”</em>, <em>“Looe”</em>, <em>“panel 0147_6”</em></li>
+                <li>Calls <code>chart.answer</code> over MCP</li>
+                <li>Response is prose, not JSON</li>
+                <li>Grounded in the same service layer as REST</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. Chat → map flow -->
+        <section>
+          <p class="eyebrow">User flow</p>
+          <h2>Chat → map zoom → overlap</h2>
+          <div class="mermaid">
+            sequenceDiagram actor U as User participant SPA as ChatBot participant API as
+            FastAPI /api/chat participant DS as data.lookup participant MV as MapView
+            participant OG as /api/overlap-geojson U->>SPA: chart number 2345
+            SPA->>API: POST /api/chat API->>DS: lookup DS-->>API: matches API-->>SPA:
+            prose reply + payload SPA->>MV: focus = lookup MV->>OG: intersection request
+            OG-->>MV: FeatureCollection + bounds MV-->>U: map zooms, overlay drawn
+          </div>
+        </section>
+
+        <!-- 7. Design system + a11y -->
+        <section>
+          <p class="eyebrow">Design system</p>
+          <h2>Admiralty brand + WCAG 2.2</h2>
+          <ul>
+            <li>Navy <code>#001B5F</code>, Marine blue <code>#0090D4</code>, Gold <code>#F2A900</code>,
+              Red <code>#E30613</code> — taken from admiralty.co.uk and the
+              <code>@ukho/admiralty-core</code> palette.</li>
+            <li>Horizontal white UKHO mark in the navy page header.</li>
+            <li>Skip link, visible focus ring (GDS yellow on ink), 44×44 touch targets,
+              <code>prefers-reduced-motion</code>, semantic landmarks.</li>
+            <li>ESLint runs <code>eslint-plugin-jsx-a11y</code> in CI.</li>
+          </ul>
+        </section>
+
+        <!-- 8. Observability -->
+        <section>
+          <p class="eyebrow">Observability</p>
+          <h2>Prometheus + OTEL + Sentry + web-vitals</h2>
+          <div class="two-col">
+            <div>
+              <ul>
+                <li><code>/metrics</code> Prometheus text format</li>
+                <li><code>/livez</code>, <code>/healthz</code> split for k8s / Docker</li>
+                <li>OTLP tracing gated on <code>OTEL_EXPORTER_OTLP_ENDPOINT</code></li>
+                <li>Sentry gated on <code>SENTRY_DSN</code></li>
+                <li>Browser web-vitals reported via <code>navigator.sendBeacon</code></li>
+              </ul>
+            </div>
+            <div>
+              <div class="kpi-grid" style="grid-template-columns: 1fr 1fr">
+                <div class="kpi"><div class="num">LCP 456 ms</div><div class="lbl">Largest Contentful Paint</div></div>
+                <div class="kpi"><div class="num">INP 24 ms</div><div class="lbl">Interaction to Next Paint</div></div>
+                <div class="kpi"><div class="num">CLS 0.00</div><div class="lbl">Cumulative Layout Shift</div></div>
+                <div class="kpi"><div class="num">TTFB 5.6 ms</div><div class="lbl">Time to First Byte</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. Grafana screenshot description -->
+        <section>
+          <p class="eyebrow">Observability — live</p>
+          <h2>Grafana dashboard <span class="tag marine">Prometheus 5s scrape</span></h2>
+          <ul>
+            <li>Request rate per handler</li>
+            <li>p50 / p95 latency</li>
+            <li>Status class time series</li>
+            <li>Resident memory + CPU rate</li>
+            <li>Total requests + error rate KPIs</li>
+          </ul>
+          <p class="eyebrow" style="margin-top: 1rem">Access</p>
+          <ul>
+            <li>Direct: <code>docker compose up -d</code> in <code>deploy/observability/</code></li>
+            <li>Through the lab proxy: FastAPI reverse-proxies <code>/grafana/*</code>
+              so a single port (8000) exposes the whole stack.</li>
+          </ul>
+        </section>
+
+        <!-- 10. DevOps -->
+        <section>
+          <p class="eyebrow">DevOps</p>
+          <h2>Green PRs, reproducible deploys</h2>
+          <div class="two-col">
+            <div>
+              <ul>
+                <li>GitHub Actions CI: ruff, mypy, pytest+cov, ESLint, Vitest, Docker build</li>
+                <li>Pre-commit: ruff, prettier, ESLint, <code>nbstripout</code></li>
+                <li>Multi-stage Dockerfile — node builds SPA, Python 3.13 serves</li>
+                <li><code>docker-compose.yml</code> for a prod-like local run</li>
+              </ul>
+            </div>
+            <div>
+              <div class="kpi-grid" style="grid-template-columns: 1fr 1fr">
+                <div class="kpi"><div class="num">45</div><div class="lbl">Backend tests</div></div>
+                <div class="kpi"><div class="num">14</div><div class="lbl">Frontend tests</div></div>
+                <div class="kpi"><div class="num">80%</div><div class="lbl">Backend coverage</div></div>
+                <div class="kpi"><div class="num">9 KB</div><div class="lbl">Initial JS (gzip)</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. ADR -->
+        <section>
+          <p class="eyebrow">Governance</p>
+          <h2>Architectural Decision Records</h2>
+          <ul>
+            <li>ADR 0001 — one FastAPI process serves SPA, REST, MCP</li>
+            <li>ADR 0002 — Admiralty brand tokens + UKHO logo</li>
+            <li>ADR 0003 — observability baseline (Prometheus, OTEL, Sentry, web-vitals)</li>
+          </ul>
+          <p>Following the
+            <em>gov.uk Architectural Decision Record framework</em>. Immutable, dated,
+            supersedable.</p>
+        </section>
+
+        <!-- 12. Benefits — beacon -->
+        <section>
+          <p class="eyebrow">Why it matters</p>
+          <h2>A beacon for UK waters</h2>
+          <div class="beacon">
+            <p style="margin: 0">
+              <strong>AutoChart</strong> chatbot will act as a <em>beacon</em> for UKHO
+              customers — mainly UK-waters fishermen and boat owners — to make the key
+              decision of whether to buy a new paper chart for their navigation, because
+              the charts get changed as per the changing ocean demographics and
+              developments.
+            </p>
+          </div>
+        </section>
+
+        <!-- 13. Benefits -->
+        <section>
+          <p class="eyebrow">Concrete benefits</p>
+          <h2>For customers, UKHO, and the wider ecosystem</h2>
+          <div class="two-col">
+            <div>
+              <h3>Customers</h3>
+              <ul>
+                <li>Zero paperwork — ask by chart number or place name.</li>
+                <li>Visual confirmation on a live map: matched panels + overlap.</li>
+                <li>Prose reply, no spreadsheet lookup.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>UKHO + operators</h3>
+              <ul>
+                <li>MCP endpoint lets AI agents surface chart currency inside third-party
+                  tools without new integrations.</li>
+                <li>Metrics + traces + logs mean the service can be run under an SLO.</li>
+                <li>Docker + CI make redeploy a one-liner.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 14. What's next -->
+        <section>
+          <p class="eyebrow">Next</p>
+          <h2>Roadmap</h2>
+          <ul>
+            <li>Load the raw <code>data_original/*.shp</code> directly (drop the GeoJSON export step).</li>
+            <li>Contract tests for the REST + MCP surfaces (schemathesis).</li>
+            <li>Auth for stakeholders — swap the API-key gate for OIDC.</li>
+            <li>Ship the container to UKHO delivery infra with a real Grafana + Sentry backend.</li>
+          </ul>
+        </section>
+
+        <!-- 15. Thank you -->
+        <section class="cover" style="text-align: center">
+          <img class="logo" src="ukho-logo.svg" alt="UK Hydrographic Office" style="margin: 0 auto 1rem" />
+          <div class="marine-strip" style="margin: 1rem auto"></div>
+          <h1 style="margin: 0.5rem 0">Thank you</h1>
+          <p style="font-size: 1.1rem">
+            Repo: <code>github.com/iNileshW/AutoChart</code>
+          </p>
+        </section>
+      </div>
+
+      <div class="footer">
+        <span>AutoChart — graduation project</span>
+        <span>UKHO • Admiralty design tokens</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "base",
+        themeVariables: {
+          primaryColor: "#001b5f",
+          primaryTextColor: "#ffffff",
+          primaryBorderColor: "#0090d4",
+          lineColor: "#0090d4",
+          fontFamily: "Arial, Helvetica, sans-serif",
+        },
+      });
+      window.mermaid = mermaid;
+    </script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        controls: true,
+        progress: true,
+        slideNumber: "c/t",
+        transition: "slide",
+        plugins: [RevealHighlight, RevealNotes],
+      }).then(() => {
+        // Render mermaid diagrams after Reveal boot.
+        const nodes = document.querySelectorAll(".mermaid");
+        window.mermaid.run({ nodes });
+      });
+    </script>
+  </body>
+</html>
