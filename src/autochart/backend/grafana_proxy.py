@@ -43,8 +43,18 @@ def is_enabled() -> bool:
     return UPSTREAM is not None
 
 
-def _clean_headers(headers) -> dict[str, str]:
-    return {k: v for k, v in headers.items() if k.lower() not in _HOP_BY_HOP}
+def _clean_headers(headers) -> list[tuple[str, str]]:
+    raw = getattr(headers, "raw", None)
+    if raw is None:
+        raw = [(k.encode("latin-1"), v.encode("latin-1")) for k, v in headers.items()]
+
+    cleaned: list[tuple[str, str]] = []
+    for k_bytes, v_bytes in raw:
+        k = k_bytes.decode("latin-1")
+        if k.lower() in _HOP_BY_HOP:
+            continue
+        cleaned.append((k, v_bytes.decode("latin-1")))
+    return cleaned
 
 
 if is_enabled():
