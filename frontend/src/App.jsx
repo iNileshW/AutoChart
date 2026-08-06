@@ -308,21 +308,214 @@ export function MapView({ focus } = {}) {
   );
 }
 
+let mcpIdCounter = 0;
+function nextMcpId() {
+  mcpIdCounter += 1;
+  return mcpIdCounter;
+}
+
+async function mcpCall(method, params) {
+  const res = await fetch("mcp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: nextMcpId(), method, params }),
+  });
+  if (!res.ok) throw new Error(`MCP error: ${res.status}`);
+  const body = await res.json();
+  if (body.error) throw new Error(`${body.error.code}: ${body.error.message}`);
+  return body.result;
+}
+
+function sampleArgsFor(tool) {
+  if (!tool?.inputSchema?.properties) return "{}";
+  const sample = {};
+  for (const [key, schema] of Object.entries(tool.inputSchema.properties)) {
+    if (schema?.default !== undefined) {
+      sample[key] = schema.default;
+    } else if (
+      Array.isArray(schema?.type) ? schema.type.includes("string") : schema?.type === "string"
+    ) {
+      sample[key] = "";
+    } else if (schema?.type === "array") {
+      sample[key] = [];
+    } else if (schema?.type === "integer" || schema?.type === "number") {
+      sample[key] = 0;
+    } else {
+      sample[key] = null;
+    }
+  }
+  return JSON.stringify(sample, null, 2);
+}
+
+export function MCPChat() {
+  const [tools, setTools] = useState([]);
+  const [toolsError, setToolsError] = useState(null);
+  const [selected, setSelected] = useState("");
+  const [argsText, setArgsText] = useState("{}");
+  const [result, setResult] = useState(null);
+  const [callError, setCallError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    mcpCall("tools/list")
+      .then((r) => {
+        if (!alive) return;
+        const list = r?.tools ?? [];
+        setTools(list);
+        if (list.length > 0) {
+          setSelected(list[0].name);
+          setArgsText(sampleArgsFor(list[0]));
+        }
+      })
+      .catch((e) => alive && setToolsError(e.message));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const selectedTool = useMemo(
+    () => tools.find((t) => t.name === selected) ?? null,
+    [tools, selected],
+  );
+
+  const changeTool = (name) => {
+    setSelected(name);
+    const tool = tools.find((t) => t.name === name) ?? null;
+    setArgsText(sampleArgsFor(tool));
+    setResult(null);
+    setCallError(null);
+  };
+
+  const submit = async () => {
+    setLoading(true);
+    setCallError(null);
+    setResult(null);
+    let parsed;
+    try {
+      parsed = argsText.trim() === "" ? {} : JSON.parse(argsText);
+    } catch (e) {
+      setCallError(`Invalid JSON: ${e.message}`);
+      setLoading(false);
+      return;
+    }
+    try {
+      const r = await mcpCall("tools/call", { name: selected, arguments: parsed });
+      setResult(r);
+    } catch (e) {
+      setCallError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="panel">
+      <h2>MCP chatbot — direct tool call</h2>
+      <p className="muted">
+        Issues JSON-RPC calls against <strong>/mcp</strong>. Pick a tool, edit the arguments, and
+        submit. Response is shown raw; images are rendered inline.
+      </p>
+      {toolsError && <p className="error">Failed to load tools: {toolsError}</p>}
+      <div className="row">
+        <label htmlFor="mcp-tool">Tool</label>
+        <select id="mcp-tool" value={selected} onChange={(e) => changeTool(e.target.value)}>
+          {tools.map((t) => (
+            <option key={t.name} value={t.name}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      {selectedTool?.description && <p className="muted">{selectedTool.description}</p>}
+      <div className="row">
+        <label htmlFor="mcp-args">Arguments (JSON)</label>
+      </div>
+      <textarea
+        id="mcp-args"
+        rows={8}
+        value={argsText}
+        onChange={(e) => setArgsText(e.target.value)}
+        spellCheck={false}
+      />
+      <button type="button" onClick={submit} disabled={loading || !selected}>
+        {loading ? "Calling..." : "Call tool"}
+      </button>
+      {callError && <p className="error">{callError}</p>}
+      {result && (
+        <div className="reply">
+          {(result.content || []).map((c, i) => {
+            if (c.type === "text") {
+              let pretty = c.text;
+              try {
+                pretty = JSON.stringify(JSON.parse(c.text), null, 2);
+              } catch {
+                /* leave as-is */
+              }
+              return <pre key={`c${i}`}>{pretty}</pre>;
+            }
+            if (c.type === "image" && c.data) {
+              return (
+                <img
+                  key={`c${i}`}
+                  src={`data:${c.mimeType || "image/png"};base64,${c.data}`}
+                  alt={`MCP result ${i}`}
+                />
+              );
+            }
+            return <pre key={`c${i}`}>{JSON.stringify(c, null, 2)}</pre>;
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function App() {
   const [lookup, setLookup] = useState(null);
+  const [view, setView] = useState("home");
   return (
     <main className="page">
-      <section className="hero">
-        <p className="eyebrow">AutoChart</p>
-        <h1>Chart comparison — chatbot and map</h1>
-        <p>
-          Backend at <strong>/api</strong>, MCP at <strong>/mcp</strong>. Map is limited to Scale ≤{" "}
-          {MAX_SCALE.toLocaleString()}. Submit a lookup to zoom the map and show the old ∩ new
-          overlap.
-        </p>
-      </section>
-      <ChatBot onLookup={setLookup} />
-      <MapView focus={lookup} />
+      <nav className="topnav" aria-label="Main">
+        <button
+          type="button"
+          className={view === "home" ? "nav-link active" : "nav-link"}
+          onClick={() => setView("home")}
+        >
+          Home
+        </button>
+        <button
+          type="button"
+          className={view === "mcp" ? "nav-link active" : "nav-link"}
+          onClick={() => setView("mcp")}
+        >
+          MCP chatbot
+        </button>
+      </nav>
+      {view === "home" ? (
+        <>
+          <section className="hero">
+            <p className="eyebrow">AutoChart</p>
+            <h1>Chart comparison — chatbot and map</h1>
+            <p>
+              Backend at <strong>/api</strong>, MCP at <strong>/mcp</strong>. Map is limited to
+              Scale ≤ {MAX_SCALE.toLocaleString()}. Submit a lookup to zoom the map and show the old
+              ∩ new overlap.
+            </p>
+          </section>
+          <ChatBot onLookup={setLookup} />
+          <MapView focus={lookup} />
+        </>
+      ) : (
+        <>
+          <section className="hero">
+            <p className="eyebrow">AutoChart / MCP</p>
+            <h1>MCP chatbot</h1>
+            <p>Direct JSON-RPC access to the same tool catalogue used by the AI agent flow.</p>
+          </section>
+          <MCPChat />
+        </>
+      )}
     </main>
   );
 }

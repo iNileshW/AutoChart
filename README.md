@@ -4,7 +4,7 @@ AutoChart compares old and new UKHO geospatial navigation chart polygons and hel
 
 ## Architecture
 
-- **Frontend**: React + Vite in `frontend/` (chatbot and Leaflet map). The `/api/overlap` REST endpoint and the `chart.overlap` MCP tool remain available for programmatic use.
+- **Frontend**: React + Vite in `frontend/`. Two views selected from a top nav: **Home** (chatbot + Leaflet map with old ∩ new overlay) and **MCP chatbot** (direct JSON-RPC tool caller against `/mcp`). The `/api/overlap` REST endpoint and the `chart.overlap` MCP tool remain available for programmatic use.
 - **Backend API**: FastAPI in `src/autochart/backend/` (data + overlap service layer, REST routes).
 - **MCP endpoint**: JSON-RPC 2.0 tools mounted at `/mcp`, sharing the same service layer as the REST API.
 - **Data**: chart polygons loaded from GeoJSON exports of `data_original/*.shp` (see `src/autochart/backend/data.py`).
@@ -125,6 +125,7 @@ npm run test:watch    # Vitest watch mode
 Vitest runs under jsdom with React Testing Library. Test files live in `frontend/src/test/`:
 - `ChatBot.test.jsx` — form + fetch + reply rendering + error handling
 - `MapView.test.jsx` — loading/error states + GeoJSON layer counts (react-leaflet is mocked so tests run without a canvas-capable DOM)
+- `MCPChat.test.jsx` — MCP tool catalogue load, `tools/call` request body, invalid-JSON guard, JSON-RPC error rendering
 
 Test coverage:
 - `tests/test_data.py` — lookup semantics per mode, scale filter, GeoJSON shape

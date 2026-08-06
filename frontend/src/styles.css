@@ -55,14 +55,6 @@ label {
   font-weight: 600;
 }
 
-textarea {
-  width: 100%;
-  padding: 0.85rem;
-  border: 1px solid #c6d4e6;
-  border-radius: 10px;
-  font: inherit;
-}
-
 button {
   margin-top: 0.75rem;
   background: linear-gradient(120deg, var(--brand), var(--brand-2));
@@ -165,4 +157,48 @@ input {
   margin-top: 0;
   font-size: 1.15rem;
   color: var(--brand-2);
+}
+
+.topnav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid #dbe4ef;
+  padding-bottom: 0.5rem;
+}
+
+.nav-link {
+  margin: 0;
+  padding: 0.4rem 0.9rem;
+  background: transparent;
+  color: var(--brand-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  background: rgba(3, 105, 161, 0.08);
+}
+
+.nav-link.active {
+  background: var(--brand-2);
+  color: #fff;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid #c6d4e6;
+  border-radius: 10px;
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+  font-size: 0.9rem;
+  min-height: 140px;
+  resize: vertical;
 }

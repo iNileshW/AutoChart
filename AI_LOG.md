@@ -261,6 +261,34 @@ This file tracks code and configuration changes made by AI in this repository.
 - Live `POST /mcp tools/list` → `['chart.lookup', 'chart.get_data', 'chart.overlap', 'chart.overlap_geojson', 'chart.list_panels', 'chart.compare']`.
 - Live `chart.overlap_geojson` call for `["Looe", "F Looe", "Looe Bay"]` returns 1 intersection polygon + bounds.
 
+## 2026-08-06 (MCP chatbot page)
+
+### Summary
+- Add a second UI view: an MCP chatbot that talks JSON-RPC directly to `/mcp`. Reached from a new top-nav link ("MCP chatbot"). Home view is unchanged.
+
+### Added Files
+- frontend/src/test/MCPChat.test.jsx — coverage for tool-list load, `tools/call` body, invalid-JSON guard, JSON-RPC error surfacing.
+
+### Updated Files
+- frontend/src/App.jsx
+  - `mcpCall(method, params)` helper (path-relative `mcp` fetch).
+  - `MCPChat` component: fetches `tools/list`, renders a tool selector + textarea prefilled from the tool's `inputSchema` sample, calls `tools/call` with parsed args, renders each content chunk (text → `<pre>` with pretty-printed JSON when parseable; image → base64 `<img>`).
+  - `App` gains a `view` state and a top nav with "Home" and "MCP chatbot" buttons; existing Home wiring (`ChatBot` + `MapView`) untouched.
+  - Extracted a pure `sampleArgsFor(tool)` helper so tool-change resets happen in the `<select>` `onChange` handler instead of a setState-in-effect chain.
+- frontend/src/styles.css — new `.topnav`, `.nav-link`, `.muted` rules; consolidated the `textarea` block.
+- README.md — mentions the new top-nav view and lists the new test file.
+
+### Validation
+- `cd frontend && npm test` → 13 passed (3 files).
+- `npm run lint` → 0 issues.
+- `npm run format:check` → clean.
+- `npm run build` → clean.
+- Live backend serves the new bundle; `/mcp` unchanged.
+
+### Notes
+- User-event's `.type()` interprets `{...}` as escape sequences, so the "issues tools/call" test uses `.paste()` to insert raw JSON.
+- Home flow (Chatbot → MapView zoom + overlap) is unchanged.
+
 ## Ongoing Tracking Format
 Use this format for future entries:
 
