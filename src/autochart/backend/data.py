@@ -220,12 +220,16 @@ def overlap_geojson(
             inter_gdf = gpd.GeoDataFrame(geometry=[inter], crs="EPSG:27700").to_crs("EPSG:4326")
             intersection_fc = json.loads(inter_gdf.to_json(default=_json_default))
 
-    return {
-        **intersection_fc,
-        "bounds_4326": bounds,
-        "old_selected_4326": _gdf_to_geojson(old_sel) if not old_sel.empty else {"type": "FeatureCollection", "features": []},
-        "new_selected_4326": _gdf_to_geojson(new_sel) if not new_sel.empty else {"type": "FeatureCollection", "features": []},
-    }
+return {
+    **intersection_fc,
+    "bounds_4326": bounds,
+    "old_selected_4326": _gdf_to_geojson(old_4326)
+    if not old_4326.empty
+    else {"type": "FeatureCollection", "features": []},
+    "new_selected_4326": _gdf_to_geojson(new_4326)
+    if not new_4326.empty
+    else {"type": "FeatureCollection", "features": []},
+}
 
 
 def _summarise_matches(subject: str, result: dict[str, Any]) -> str:
