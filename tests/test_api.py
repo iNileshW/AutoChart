@@ -50,6 +50,14 @@ def test_overlap_geojson_endpoint(client: TestClient) -> None:
     assert len(body["features"]) >= 1
 
 
+def test_overlap_geojson_empty_input(client: TestClient) -> None:
+    r = client.post("/api/overlap-geojson", json={"panel_names": [], "max_scale": 30000})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["bounds_4326"] is None
+    assert body["features"] == []
+
+
 def test_overlap_endpoint(client: TestClient) -> None:
     r = client.post(
         "/api/overlap",

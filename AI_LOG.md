@@ -244,6 +244,23 @@ This file tracks code and configuration changes made by AI in this repository.
 - Frontend matching is done by panel name (`PANEL_MAIN` for old, `Panel_Name` for new). `Panel_ID` is not unique in the new dataset, so name matching is more stable.
 - The backend keeps the existing `/api/overlap` (PNG) endpoint for the MCP tool and for programmatic consumers; the map path uses the new GeoJSON endpoint.
 
+## 2026-08-06 (Parity pass: MCP tool + missing tests)
+
+### Summary
+- Expose the new intersection endpoint over MCP so both transports are at feature parity.
+- Cover the empty-input branch of `/api/overlap-geojson` and the new MCP tool.
+
+### Updated Files
+- src/autochart/backend/mcp_server.py — new `chart.overlap_geojson` tool advertised in `tools/list` and dispatched in `_call_tool`.
+- tests/test_api.py — added `test_overlap_geojson_empty_input`.
+- tests/test_mcp.py — `tools/list` now asserts on `chart.overlap_geojson`; new `test_tools_call_overlap_geojson_returns_intersection`.
+- README.md — MCP tool list includes `chart.overlap_geojson`.
+
+### Validation
+- `uv run pytest` → 29 passed, 1 warning.
+- Live `POST /mcp tools/list` → `['chart.lookup', 'chart.get_data', 'chart.overlap', 'chart.overlap_geojson', 'chart.list_panels', 'chart.compare']`.
+- Live `chart.overlap_geojson` call for `["Looe", "F Looe", "Looe Bay"]` returns 1 intersection polygon + bounds.
+
 ## Ongoing Tracking Format
 Use this format for future entries:
 

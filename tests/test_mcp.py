@@ -21,6 +21,7 @@ def test_tools_list_advertises_expected_tools(client: TestClient) -> None:
         "chart.lookup",
         "chart.get_data",
         "chart.overlap",
+        "chart.overlap_geojson",
         "chart.list_panels",
         "chart.compare",
     }:
@@ -37,6 +38,23 @@ def test_tools_call_lookup_returns_json_payload(client: TestClient) -> None:
     assert content[0]["type"] == "text"
     payload = json.loads(content[0]["text"])
     assert payload["mode"] == "chart_name"
+
+
+def test_tools_call_overlap_geojson_returns_intersection(client: TestClient) -> None:
+    body = _rpc(
+        client,
+        "tools/call",
+        params={
+            "name": "chart.overlap_geojson",
+            "arguments": {"panel_names": ["Looe", "F Looe", "Looe Bay"], "max_scale": 30000},
+        },
+    )
+    content = body["result"]["content"]
+    assert content[0]["type"] == "text"
+    payload = json.loads(content[0]["text"])
+    assert payload["type"] == "FeatureCollection"
+    assert payload["bounds_4326"] is not None
+    assert len(payload["features"]) >= 1
 
 
 def test_tools_call_overlap_returns_image(client: TestClient) -> None:

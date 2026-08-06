@@ -42,6 +42,7 @@ Tools:
 - `chart.get_data` — same as `/api/data`
 - `chart.list_panels` — same as `/api/panels`
 - `chart.overlap` — returns a `text` + `image/png` content pair
+- `chart.overlap_geojson` — same semantics as `/api/overlap-geojson` (intersection polygons + bounds)
 - `chart.compare` — alias for `chart.overlap`
 
 Example:
