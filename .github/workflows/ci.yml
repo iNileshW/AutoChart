@@ -16,7 +16,7 @@ permissions:
 jobs:
   backend:
     name: Backend (ruff, mypy, pytest)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
@@ -45,7 +45,7 @@ jobs:
 
   frontend:
     name: Frontend (eslint, vitest, build)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
