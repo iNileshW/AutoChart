@@ -372,10 +372,10 @@ export function MCPChat() {
 
   return (
     <section className="panel">
-      <h2>MCP chatbot</h2>
+      <h2>Agent Chat</h2>
       <p className="muted">
         Ask about a chart by number, name, title, or panel id — e.g. <em>2345</em>, <em>Looe</em>,
-        or <em>panel 0147_6</em>. Answers come from the <strong>chart.answer</strong> MCP tool.
+        or <em>panel 0147_6</em>. Answers are provided by Agent.
       </p>
       <div className="chat-thread" role="log" aria-live="polite">
         {messages.length === 0 && (
@@ -383,7 +383,7 @@ export function MCPChat() {
         )}
         {messages.map((m, i) => (
           <div key={`m${i}`} className={`chat-msg chat-${m.role}`}>
-            <span className="chat-role">{m.role === "user" ? "You" : "MCP"}</span>
+            <span className="chat-role">{m.role === "user" ? "You" : "Agent"}</span>
             <p>{m.text}</p>
           </div>
         ))}
@@ -431,7 +431,7 @@ export default function App() {
           className={view === "mcp" ? "nav-link active" : "nav-link"}
           onClick={() => setView("mcp")}
         >
-          MCP chatbot
+          Agent Chatbot
         </button>
       </nav>
       {view === "home" ? (
@@ -451,9 +451,8 @@ export default function App() {
       ) : (
         <>
           <section className="hero">
-            <p className="eyebrow">AutoChart / MCP</p>
-            <h1>MCP chatbot</h1>
-            <p>Direct JSON-RPC access to the same tool catalogue used by the AI agent flow.</p>
+            <p className="eyebrow">AutoChart / Agent</p>
+            <h1>Agent Chatbot</h1>
           </section>
           <MCPChat />
         </>
