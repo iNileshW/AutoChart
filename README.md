@@ -171,6 +171,17 @@ uv run pre-commit run --all-files
 
 The config runs ruff (lint + format), Prettier, ESLint on staged frontend files, and `nbstripout` to keep notebook diffs clean.
 
+## Observability
+
+- **`GET /metrics`** — Prometheus text format (request counts, latency histograms, status codes). On by default; disable with `AUTOCHART_METRICS=0`.
+- **`GET /livez`** — cheap liveness probe (`{status: alive}`).
+- **`GET /healthz`** — readiness probe (returns `ready` when the geodata is loadable, `degraded` otherwise).
+- **OpenTelemetry** — set `OTEL_EXPORTER_OTLP_ENDPOINT=http://...` to ship FastAPI spans via OTLP/HTTP. Service name defaults to `autochart` (override with `OTEL_SERVICE_NAME`).
+- **Sentry** — set `SENTRY_DSN=...` to enable error + performance capture. `SENTRY_ENVIRONMENT` and `SENTRY_TRACES_SAMPLE_RATE` tune the deployment.
+- **Web vitals** — the SPA reports CLS / INP / LCP / FCP / TTFB to `POST /api/telemetry` via `navigator.sendBeacon`. Each report lands in the structured log stream.
+
+See [ADR 0003](docs/adr/0003-observability-baseline.md) for the rationale.
+
 ## Environment
 
 See `.env.example` for the full list. Highlights:
@@ -181,6 +192,9 @@ See `.env.example` for the full list. Highlights:
 | `AUTOCHART_ALLOWED_ORIGINS` | dev origins | CORS allow-list |
 | `AUTOCHART_API_KEY` | *(unset)* | Optional `X-API-Key` gate on `/api/*` and `/mcp` |
 | `AUTOCHART_LOG_LEVEL` / `AUTOCHART_LOG_JSON` | `INFO` / `1` | Structured logging via structlog |
+| `AUTOCHART_METRICS` | `1` | Toggle the `/metrics` Prometheus endpoint |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` / `OTEL_SERVICE_NAME` | *(unset)* / `autochart` | OTLP tracing exporter |
+| `SENTRY_DSN` / `SENTRY_ENVIRONMENT` / `SENTRY_TRACES_SAMPLE_RATE` | *(unset)* / `development` / `0.0` | Sentry error + trace capture |
 
 ## Notebook
 

@@ -9,11 +9,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from autochart.backend.api.routes import router as api_router
 from autochart.backend.config import ALLOWED_ORIGINS
 from autochart.backend.logging_setup import get_logger
 from autochart.backend.mcp_server import router as mcp_router
+from autochart.backend.observability import install as install_observability
+from autochart.backend.observability import log_web_vital
 from autochart.backend.security import api_key_middleware
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -27,6 +30,8 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
 )
+
+install_observability(app)
 
 
 async def request_context(request: Request, call_next):
@@ -76,6 +81,40 @@ app.include_router(mcp_router)
 @app.get("/health")
 def health_root() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/livez", include_in_schema=False)
+def livez() -> dict[str, str]:
+    """Liveness probe — always cheap, always 200 unless the process is dead."""
+    return {"status": "alive"}
+
+
+@app.get("/healthz")
+def healthz() -> dict[str, str]:
+    """Readiness probe — verifies the geodata is loadable."""
+    try:
+        from autochart.backend.data import load_new, load_old
+
+        load_old()
+        load_new()
+    except Exception as e:  # pragma: no cover - defensive
+        log.warning("readiness.failed", error=str(e))
+        return {"status": "degraded"}
+    return {"status": "ready"}
+
+
+class WebVitalIn(BaseModel):
+    name: str
+    value: float
+    rating: str | None = None
+    id: str | None = None
+    navigationType: str | None = None
+
+
+@app.post("/api/telemetry", include_in_schema=False)
+def telemetry(payload: WebVitalIn) -> Response:
+    log_web_vital(payload.model_dump())
+    return Response(status_code=204)
 
 
 @app.get("/favicon.ico", include_in_schema=False, response_model=None)

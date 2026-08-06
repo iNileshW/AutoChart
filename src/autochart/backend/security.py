@@ -11,6 +11,9 @@ from autochart.backend import config
 PUBLIC_PATHS: set[str] = {
     "/",
     "/health",
+    "/livez",
+    "/healthz",
+    "/metrics",
     "/api/health",
     "/api/v1/health",
     "/favicon.ico",
