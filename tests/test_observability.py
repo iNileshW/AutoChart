@@ -5,12 +5,13 @@ from fastapi.testclient import TestClient
 
 from autochart.backend import config
 
-_AUTH_HEADERS: dict[str, str] = {config.API_KEY_HEADER: config.API_KEY} if config.API_KEY else {}
+
+def _auth_headers() -> dict[str, str]:
+    return {config.API_KEY_HEADER: config.API_KEY} if config.API_KEY else {}
 
 
 def _get(client: TestClient, path: str):
-    return client.get(path, headers=_AUTH_HEADERS)
-
+    return client.get(path, headers=_auth_headers())
 
 def test_livez(client: TestClient) -> None:
     r = _get(client, "/livez")
