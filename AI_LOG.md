@@ -2,6 +2,30 @@
 
 This file tracks code and configuration changes made by AI in this repository.
 
+## 2026-08-07
+
+### Summary
+- Added a one-step VS Code startup flow to run backend and frontend together.
+
+### Added Files
+- .vscode/tasks.json
+  - Added three tasks:
+    - `dev:backend` runs `uv run autochart-api`
+    - `dev:frontend` runs `npm run dev` from `frontend/`
+    - `dev:all` compound task starts both in parallel
+
+### Updated Files
+- README.md
+  - Added a "One-step startup in VS Code" section with `dev:all` usage and stop instructions.
+
+### Validation
+- Verified backend health endpoint returns 200 at `http://127.0.0.1:8000/api/health`.
+- Verified frontend dev server returns 200 at `http://localhost:5173/`.
+
+### Notes
+- The one-step flow is task-based (VS Code Tasks) and does not replace existing CLI commands.
+- Updated `dev:frontend` task to call `npx vite --host 127.0.0.1 --port 5173 --strictPort` directly, because npm argument forwarding in PowerShell dropped option flags and caused unstable startup behavior.
+
 ## 2026-08-03
 
 ### Summary
