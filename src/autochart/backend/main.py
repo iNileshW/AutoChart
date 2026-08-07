@@ -195,7 +195,6 @@ def mount_spa_routes(target_app: FastAPI, frontend_dist: Path) -> None:
 
         @target_app.get("/{full_path:path}", include_in_schema=False)
         def spa_fallback(full_path: str) -> Response:
-            _ = full_path
             return index_response(NO_STORE)
     else:
 
