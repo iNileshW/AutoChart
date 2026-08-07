@@ -61,24 +61,103 @@ curl -s -X POST http://localhost:8000/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-## Run Locally
+## Install from scratch
 
-### 1. Install dependencies
+Assumes a fresh Ubuntu 22.04+ / Debian 12 / macOS box. Adapt package installs for your distro.
 
-```bash
-uv sync                       # Python deps
-(cd frontend && npm install)  # Frontend deps
-```
+### 0. Prerequisites
 
-### 2. Build frontend (production SPA served by the backend)
+Install the base toolchain:
 
 ```bash
-cd frontend && npm run build
+# Debian / Ubuntu
+sudo apt update
+sudo apt install -y git curl build-essential libgeos-dev libproj-dev libgdal-dev
+
+# macOS (Homebrew)
+brew install git curl geos proj gdal
 ```
 
-Outputs `frontend/dist/`, which the backend mounts at `/` (and `/app-assets/`).
+Install the language runtimes:
 
-### 3. Start backend
+```bash
+# uv — the Python 3.13 project manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"        # add to your shell profile
+uv --version                                # expect >= 0.12
+
+# Node 22 via nvm (also fine to use the OS package)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
+nvm install 22
+node --version                              # expect v22.x
+npm --version                               # expect >= 10
+```
+
+Optional but useful:
+
+```bash
+sudo apt install -y podman podman-compose   # for the Grafana + Prometheus stack
+# or on Debian/Ubuntu:
+sudo apt install -y docker.io docker-compose-plugin
+```
+
+### 1. Clone
+
+```bash
+git clone https://github.com/iNileshW/AutoChart.git
+cd AutoChart
+```
+
+### 2. Install project dependencies
+
+```bash
+uv sync                                     # Python 3.13 venv at .venv/, all deps
+(cd frontend && npm install)                # React, Leaflet, Vite, Vitest, Playwright, etc.
+```
+
+`uv sync` also installs the dev group (mypy, pytest-cov, ruff, nbstripout, pre-commit, jupyter). If you only want runtime deps: `uv sync --no-dev`.
+
+### 3. Provide the chart data
+
+The backend reads `my_file_gdf_old.geojson` and `my_file_gdf_new.geojson` at the repo root. They are `.gitignore`-d because they are derived from shapefiles.
+
+If you have the source shapefiles (`data_original/*.shp` bundle):
+
+```bash
+uv run jupyter nbconvert --to notebook --execute --inplace notebook.ipynb
+```
+
+The notebook loads the shapefiles and writes the two GeoJSON exports next to `README.md`. Confirm they exist:
+
+```bash
+ls my_file_gdf_old.geojson my_file_gdf_new.geojson
+```
+
+If you do not have the shapefiles, ask the project owner for a copy — the backend `/healthz` probe reports `degraded` without them.
+
+### 4. Configure environment
+
+```bash
+cp .env.example .env
+# edit .env to set AUTOCHART_API_KEY, SENTRY_DSN, etc. — all optional.
+```
+
+Then export it before running the backend (or use a helper like `direnv`):
+
+```bash
+set -a && . ./.env && set +a
+```
+
+### 5. Build the frontend
+
+```bash
+(cd frontend && npm run build)
+```
+
+Outputs `frontend/dist/`, which FastAPI mounts at `/` (and `/app-assets/`).
+
+### 6. Start the backend
 
 From the repo root:
 
@@ -88,17 +167,39 @@ uv run autochart-api
 .venv/bin/python -m uvicorn autochart.backend.main:app --host 0.0.0.0 --port 8000
 ```
 
-Open http://localhost:8000/ for the SPA. API docs: http://localhost:8000/docs.
+Open:
 
-### Dev mode with hot reload
+- SPA: <http://localhost:8000/>
+- API docs (Swagger UI): <http://localhost:8000/docs>
+- Health probes: `/livez`, `/healthz`
+- Prometheus metrics: `/metrics`
+- Reveal.js deck: `/presentation/`
 
-If you prefer Vite's dev server:
+### 7. (Optional) Local Grafana + Prometheus
+
+```bash
+cd deploy/observability
+docker compose up -d          # Prometheus :9090 + Grafana :3000
+```
+
+Dashboards auto-provision. See the [Observability](#observability) section for the reverse-proxy setup.
+
+### 8. (Optional) Enable pre-commit hooks
+
+```bash
+uv run pre-commit install
+uv run pre-commit run --all-files
+```
+
+## Dev mode with hot reload
+
+Once the from-scratch install is done, iterate faster with Vite's dev server:
 
 ```bash
 cd frontend && npm run dev
 ```
 
-Runs on `http://localhost:5173` and proxies `/api` + `/mcp` to `http://localhost:8000`. Start the backend as in step 3.
+Runs on <http://localhost:5173> and proxies `/api` + `/mcp` to `http://localhost:8000`. Start the backend as in step 6.
 
 ## Behind a reverse proxy
 
