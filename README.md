@@ -63,9 +63,11 @@ curl -s -X POST http://localhost:8000/mcp \
 
 ## Install from scratch
 
-Assumes a fresh Ubuntu 22.04+ / Debian 12 / macOS box. Adapt package installs for your distro.
+Two tracks below: **Linux/macOS** and **Windows**. Pick one and follow steps 0–8. Steps 1–8 are largely OS-agnostic; only the prerequisites differ.
 
-### 0. Prerequisites
+### 0a. Prerequisites — Linux / macOS
+
+Assumes a fresh Ubuntu 22.04+ / Debian 12 / macOS box. Adapt package installs for your distro.
 
 Install the base toolchain:
 
@@ -101,6 +103,55 @@ sudo apt install -y podman podman-compose   # for the Grafana + Prometheus stack
 # or on Debian/Ubuntu:
 sudo apt install -y docker.io docker-compose-plugin
 ```
+
+### 0b. Prerequisites — Windows 10/11
+
+Two supported paths — pick one.
+
+**Recommended: WSL2 (Ubuntu inside Windows)** — best geopandas experience, matches CI.
+
+```powershell
+# From an elevated PowerShell (Run as Administrator):
+wsl --install -d Ubuntu-22.04
+# Reboot when prompted, launch "Ubuntu 22.04" from Start,
+# create your Linux user, then follow track 0a above INSIDE WSL.
+```
+
+Access the WSL filesystem from Windows via `\\wsl$\Ubuntu-22.04\...`; open the folder in VS Code with the "WSL" extension.
+
+**Alternative: native Windows** — install everything through `winget` in an admin PowerShell:
+
+```powershell
+winget install --id Git.Git -e
+winget install --id astral-sh.uv -e                # Python 3.13 project manager
+winget install --id CoreyButler.NVMforWindows -e   # nvm-windows
+winget install --id OSGeo.GDAL -e                  # provides GDAL/GEOS/PROJ DLLs
+# Optional:
+winget install --id Docker.DockerDesktop -e
+```
+
+Then in a **new** PowerShell (so PATH is refreshed):
+
+```powershell
+nvm install 22.11.0
+nvm use 22.11.0
+node --version                                     # expect v22.x
+uv --version                                       # expect >= 0.12
+```
+
+If `uv sync` later complains about missing GEOS/GDAL headers, the OSGeo4W shell (installed by `OSGeo.GDAL`) exports the right environment — run the rest of the install from there, or ensure the OSGeo4W `bin` directory is on `PATH`. Geopandas usually ships prebuilt Windows wheels, so most users do not hit this.
+
+PowerShell equivalent of the bash `set -a` pattern in step 4:
+
+```powershell
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^\s*([^#=]+)\s*=\s*(.*)$') {
+    [Environment]::SetEnvironmentVariable($matches[1].Trim(), $matches[2].Trim(), 'Process')
+  }
+}
+```
+
+`curl` is included in Windows 10/11 (it is `curl.exe`; do not confuse with the PowerShell `curl` alias — call the executable explicitly if needed).
 
 ### 1. Clone
 
