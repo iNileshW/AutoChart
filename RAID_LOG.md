@@ -17,6 +17,7 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 
 | ID | Date Raised | Risk Description | Impact | Likelihood | Mitigation Plan | Owner | Status | Last Reviewed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| R-009 | 2026-08-07 | SPA catch-all route could be flagged for traversal if it serves user-derived paths from dist. | High | Medium | Harden fallback to index-only + top-level allowlist, add dedicated SPA traversal tests, keep no scanner suppression. | Backend Lead | Mitigated | 2026-08-07 |
 | R-008 | 2026-08-06 | Reverse-proxy (`/proxy/<port>/`) usage in the dev VM makes any absolute path break assets/fetches. | Medium | High | Vite `base: "./"`, path-relative fetches, and a custom `/docs` route. Documented in README. | Frontend Lead | Mitigated | 2026-08-06 |
 | R-007 | 2026-08-06 | Wide-open CORS + no auth would expose the API if deployed publicly as-is. | High | Medium | CORS allow-list env var (`AUTOCHART_ALLOWED_ORIGINS`), optional API-key middleware (`AUTOCHART_API_KEY`), Clear-Site-Data on `/?nuke=1`. | Backend Lead | Mitigated | 2026-08-06 |
 | R-006 | 2026-08-06 | Absent CI could allow lint/test regressions to reach main (a CodeQL autofix briefly broke `data.py`). | High | Medium | GitHub Actions workflow gates ruff/mypy/pytest+cov, eslint/vitest, Docker build. | Platform Lead | Mitigated | 2026-08-06 |
@@ -47,6 +48,7 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 
 | ID | Date Logged | Dependency | Type | Needed For | Owner | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| D-007 | 2026-08-07 | `pip-audit` (via `uvx --from pip-audit`) | Technical | Python runtime vulnerability scanning in CI | Platform Lead | In Use | Runs on exported `--no-dev` requirements in `security` job. |
 | D-006 | 2026-08-07 | VS Code Tasks (`.vscode/tasks.json`) | Tooling | One-step local startup (`dev:all`) for backend + frontend | Full Stack Lead | In Use | Requires VS Code task runner support; commands remain runnable directly in terminal. |
 | D-005 | 2026-08-03 | Vite + React toolchain | Technical | Frontend chatbot UI | Frontend Lead | In Use | Defined in `frontend/package.json`. |
 | D-004 | 2026-08-03 | FastAPI + Uvicorn | Technical | Backend API and MCP endpoint hosting | Backend Lead | In Use | Defined in `pyproject.toml`. |
@@ -58,5 +60,6 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 
 | Date | Change | Author |
 | --- | --- | --- |
+| 2026-08-07 | Added R-009 for SPA traversal-alert handling and D-007 for pip-audit CI dependency scanning. | AI Assistant |
 | 2026-08-06 | Added risks around reverse proxy, CORS/auth, CI absence, notebook noise, and CLAUDE.md deviation. Closed I-001/I-002/I-003; added I-004. | AI Assistant |
 | 2026-08-03 | Initial RAID log created with baseline entries. | AI Assistant |
