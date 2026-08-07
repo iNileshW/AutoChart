@@ -252,6 +252,20 @@ cd frontend && npm run dev
 
 Runs on <http://localhost:5173> and proxies `/api` + `/mcp` to `http://localhost:8000`. Start the backend as in step 6.
 
+### One-step startup in VS Code
+
+Use the compound task `dev:all` to start backend and frontend together.
+
+1. Open the Command Palette and run `Tasks: Run Task`.
+2. Select `dev:all`.
+
+This launches:
+
+- `uv run autochart-api` in the repo root
+- `npm run dev` in `frontend/`
+
+Use `Tasks: Terminate Task` to stop either long-running process.
+
 ## Behind a reverse proxy
 
 The build uses `vite base: "./"` and all client fetches are path-relative (`api/...`, not `/api/...`), so the app works behind a prefix-stripping proxy (e.g. `https://<host>/proxy/8000/`). Always visit the proxied URL **with a trailing slash** so relative paths resolve correctly.

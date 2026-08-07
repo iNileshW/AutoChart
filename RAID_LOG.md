@@ -47,6 +47,7 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 
 | ID | Date Logged | Dependency | Type | Needed For | Owner | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| D-006 | 2026-08-07 | VS Code Tasks (`.vscode/tasks.json`) | Tooling | One-step local startup (`dev:all`) for backend + frontend | Full Stack Lead | In Use | Requires VS Code task runner support; commands remain runnable directly in terminal. |
 | D-005 | 2026-08-03 | Vite + React toolchain | Technical | Frontend chatbot UI | Frontend Lead | In Use | Defined in `frontend/package.json`. |
 | D-004 | 2026-08-03 | FastAPI + Uvicorn | Technical | Backend API and MCP endpoint hosting | Backend Lead | In Use | Defined in `pyproject.toml`. |
 | D-003 | 2026-08-03 | Geopandas and Pandas | Technical | Geospatial and tabular processing | Data/GIS Lead | In Use | Required for chart comparisons. |
