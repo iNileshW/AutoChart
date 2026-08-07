@@ -144,6 +144,7 @@ CLEAR_ALL = {
     "Clear-Site-Data": '"cache", "cookies", "storage", "executionContexts"',
 }
 
+
 def mount_spa_routes(target_app: FastAPI, frontend_dist: Path) -> None:
     """Mount SPA/static routes with traversal-safe fallback semantics."""
     if frontend_dist.is_dir():

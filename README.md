@@ -280,7 +280,7 @@ uv run pytest
 
 The CI pipeline includes a dedicated `security` job with explicit fail/warn behavior:
 
-- **Fail**: Python runtime dependency vulnerabilities (`pip-audit` over exported `--no-dev` requirements).
+- **Fail**: Python runtime dependency vulnerabilities (`pip-audit` against the synced runtime environment).
 - **Fail**: npm runtime vulnerabilities at `high` or `critical` (`npm audit --omit=dev --audit-level=high`).
 - **Warn only**: npm full dependency tree vulnerabilities at `moderate+` (step runs with `continue-on-error: true`).
 

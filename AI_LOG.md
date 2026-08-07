@@ -25,7 +25,7 @@ This file tracks code and configuration changes made by AI in this repository.
   - Removed user-controlled path input from `FileResponse` selection in fallback flow.
 - .github/workflows/ci.yml
   - Added `security` job:
-    - Python runtime scan via `pip-audit` over exported `--no-dev` requirements (fail).
+    - Python runtime scan via `pip-audit` against the synced runtime environment (fail).
     - npm runtime audit high/critical via `npm audit --omit=dev --audit-level=high` (fail).
     - npm full-tree moderate+ audit via `npm audit --audit-level=moderate` (warn-only).
   - Docker job now depends on backend, frontend, and security jobs.
@@ -36,8 +36,14 @@ This file tracks code and configuration changes made by AI in this repository.
 ### Validation
 - `uv run pytest`
 - `uv run ruff check src tests`
+- `uv run ruff format --check src tests`
 - `uv run mypy`
-- `cd frontend && npm run lint && npm test`
+- `uvx --from pip-audit pip-audit`
+- `cd frontend && npm run lint && npm test && npm audit --omit=dev --audit-level=high`
+
+### Follow-up fixes
+- Fixed CI backend failure by applying Ruff formatting to `src/autochart/backend/main.py`.
+- Fixed CI security failure by replacing `pip-audit -r requirements-runtime.txt` with direct environment scan (`uvx --from pip-audit pip-audit`) to avoid editable+hash install errors.
 
 ### Changed By
 - GitHub Copilot (GPT-5.3-Codex)

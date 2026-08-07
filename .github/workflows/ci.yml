@@ -80,9 +80,7 @@ jobs:
         run: uv sync --frozen --no-dev
 
       - name: Python runtime dependency scan (fail on any known vulnerability)
-        run: |
-          uv export --frozen --no-dev --format requirements-txt -o requirements-runtime.txt
-          uvx --from pip-audit pip-audit -r requirements-runtime.txt
+        run: uvx --from pip-audit pip-audit
 
       - uses: actions/setup-node@v4
         with:
