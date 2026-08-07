@@ -2,6 +2,46 @@
 
 This file tracks code and configuration changes made by AI in this repository.
 
+## 2026-08-07 (SPA security tests + CI security gate)
+
+### Summary
+- Added focused SPA traversal/security tests.
+- Added a dedicated CI security job with explicit fail/warn policy.
+- Hardened SPA fallback implementation to avoid serving user-controlled paths.
+
+### Added Files
+- tests/test_spa_security.py
+  - Validates:
+    - `/?nuke=1` sets `Clear-Site-Data`
+    - `/sw.js` returns unregister script and `no-store`
+    - traversal payloads resolve to SPA index, not arbitrary filesystem files
+    - fallback serves only allowlisted top-level files
+
+### Updated Files
+- src/autochart/backend/main.py
+  - Added `mount_spa_routes(app, frontend_dist)` to make SPA route behavior testable in isolation.
+  - Catch-all SPA fallback now always returns `index.html`.
+  - Added explicit routes for `robots.txt` and `manifest.webmanifest`.
+  - Removed user-controlled path input from `FileResponse` selection in fallback flow.
+- .github/workflows/ci.yml
+  - Added `security` job:
+    - Python runtime scan via `pip-audit` over exported `--no-dev` requirements (fail).
+    - npm runtime audit high/critical via `npm audit --omit=dev --audit-level=high` (fail).
+    - npm full-tree moderate+ audit via `npm audit --audit-level=moderate` (warn-only).
+  - Docker job now depends on backend, frontend, and security jobs.
+- README.md
+  - Added CI security policy section (fail/warn behavior).
+  - Added SPA traversal hardening decision note: hardened implementation, no suppression.
+
+### Validation
+- `uv run pytest`
+- `uv run ruff check src tests`
+- `uv run mypy`
+- `cd frontend && npm run lint && npm test`
+
+### Changed By
+- GitHub Copilot (GPT-5.3-Codex)
+
 ## 2026-08-07
 
 ### Summary

@@ -276,6 +276,26 @@ The build uses `vite base: "./"` and all client fetches are path-relative (`api/
 uv run pytest
 ```
 
+## Security policy in CI
+
+The CI pipeline includes a dedicated `security` job with explicit fail/warn behavior:
+
+- **Fail**: Python runtime dependency vulnerabilities (`pip-audit` over exported `--no-dev` requirements).
+- **Fail**: npm runtime vulnerabilities at `high` or `critical` (`npm audit --omit=dev --audit-level=high`).
+- **Warn only**: npm full dependency tree vulnerabilities at `moderate+` (step runs with `continue-on-error: true`).
+
+This keeps release gates focused on production/runtime risk while still surfacing broader dependency health.
+
+## SPA fallback traversal decision
+
+Path traversal findings against SPA fallback routing are addressed by design in backend code:
+
+- The catch-all SPA route no longer serves arbitrary user-selected files from `frontend/dist` and always serves `index.html`.
+- Allowlisted top-level files (`robots.txt`, `manifest.webmanifest`) are served via explicit routes, not via catch-all path input.
+- Hashed bundles remain served from the dedicated `/app-assets` static mount.
+
+Decision: **hardened implementation, no scanner suppression**.
+
 ## Lint & format (frontend)
 
 ```bash

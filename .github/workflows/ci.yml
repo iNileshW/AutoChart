@@ -62,10 +62,51 @@ jobs:
       - run: npm run test:coverage
       - run: npm run build
 
+  security:
+    name: Security (runtime dependency policy)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.12.1"
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Sync runtime dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Python runtime dependency scan (fail on any known vulnerability)
+        run: |
+          uv export --frozen --no-dev --format requirements-txt -o requirements-runtime.txt
+          uvx --from pip-audit pip-audit -r requirements-runtime.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: npm runtime audit (fail on high/critical)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: npm full-tree audit (warn on moderate+)
+        working-directory: frontend
+        continue-on-error: true
+        run: npm audit --audit-level=moderate
+
   docker:
     name: Docker build
     runs-on: ubuntu-24.04
-    needs: [backend, frontend]
+    needs: [backend, frontend, security]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3

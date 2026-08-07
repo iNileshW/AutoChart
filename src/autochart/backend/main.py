@@ -144,49 +144,67 @@ CLEAR_ALL = {
     "Clear-Site-Data": '"cache", "cookies", "storage", "executionContexts"',
 }
 
+def mount_spa_routes(target_app: FastAPI, frontend_dist: Path) -> None:
+    """Mount SPA/static routes with traversal-safe fallback semantics."""
+    if frontend_dist.is_dir():
+        assets_dir = frontend_dist / "app-assets"
+        index_path = frontend_dist / "index.html"
 
-if FRONTEND_DIST.is_dir():
-    assets_dir = FRONTEND_DIST / "app-assets"
-    if assets_dir.is_dir():
-        app.mount("/app-assets", StaticFiles(directory=assets_dir), name="assets")
+        def index_response(headers: dict[str, str]) -> Response:
+            return Response(index_path.read_bytes(), media_type="text/html", headers=headers)
 
-    @app.get("/", include_in_schema=False)
-    def spa_index(nuke: str | None = None) -> FileResponse:
-        headers = CLEAR_ALL if nuke == "1" else NO_STORE
-        return FileResponse(FRONTEND_DIST / "index.html", headers=headers)
+        if assets_dir.is_dir():
+            target_app.mount("/app-assets", StaticFiles(directory=assets_dir), name="assets")
 
-    @app.get("/sw.js", include_in_schema=False, response_model=None)
-    def kill_sw():
-        # Return an empty SW that immediately unregisters itself in case a client
-        # requests /sw.js from a prior app registration.
-        js = (
-            "self.addEventListener('install', () => self.skipWaiting());"
-            "self.addEventListener('activate', (e) => e.waitUntil("
-            "  self.registration.unregister().then(() => self.clients.matchAll())"
-            "  .then((cs) => cs.forEach((c) => c.navigate(c.url)))"
-            "));"
-        )
-        return Response(js, media_type="application/javascript", headers=NO_STORE)
+        @target_app.get("/", include_in_schema=False)
+        def spa_index(nuke: str | None = None) -> Response:
+            headers = CLEAR_ALL if nuke == "1" else NO_STORE
+            return index_response(headers)
 
-    @app.get("/{full_path:path}", include_in_schema=False)
-    def spa_fallback(full_path: str) -> FileResponse:
-        # Refuse traversal attempts before touching the filesystem.
-        if ".." in full_path or full_path.startswith("/"):
-            return FileResponse(FRONTEND_DIST / "index.html", headers=NO_STORE)
-        candidate = (FRONTEND_DIST / full_path).resolve()
-        try:
-            candidate.relative_to(FRONTEND_DIST.resolve())
-        except ValueError:
-            return FileResponse(FRONTEND_DIST / "index.html", headers=NO_STORE)
-        if candidate.is_file():
-            return FileResponse(candidate)
-        return FileResponse(FRONTEND_DIST / "index.html", headers=NO_STORE)
-else:
+        @target_app.get("/sw.js", include_in_schema=False, response_model=None)
+        def kill_sw():
+            # Return an empty SW that immediately unregisters itself in case a client
+            # requests /sw.js from a prior app registration.
+            js = (
+                "self.addEventListener('install', () => self.skipWaiting());"
+                "self.addEventListener('activate', (e) => e.waitUntil("
+                "  self.registration.unregister().then(() => self.clients.matchAll())"
+                "  .then((cs) => cs.forEach((c) => c.navigate(c.url)))"
+                "));"
+            )
+            return Response(js, media_type="application/javascript", headers=NO_STORE)
 
-    @app.get("/")
-    def root() -> dict[str, str]:
-        return {
-            "service": "AutoChart backend",
-            "status": "running",
-            "note": "frontend/dist not built",
-        }
+        @target_app.get("/robots.txt", include_in_schema=False, response_model=None)
+        def robots_txt():
+            robots = frontend_dist / "robots.txt"
+            if robots.is_file():
+                return Response(robots.read_bytes(), media_type="text/plain", headers=NO_STORE)
+            return index_response(NO_STORE)
+
+        @target_app.get("/manifest.webmanifest", include_in_schema=False, response_model=None)
+        def web_manifest():
+            manifest = frontend_dist / "manifest.webmanifest"
+            if manifest.is_file():
+                return Response(
+                    manifest.read_bytes(),
+                    media_type="application/manifest+json",
+                    headers=NO_STORE,
+                )
+            return index_response(NO_STORE)
+
+        @target_app.get("/{full_path:path}", include_in_schema=False)
+        def spa_fallback(full_path: str) -> Response:
+            _ = full_path
+            return index_response(NO_STORE)
+    else:
+
+        @target_app.get("/")
+        def root() -> dict[str, str]:
+            return {
+                "service": "AutoChart backend",
+                "status": "running",
+                "note": "frontend/dist not built",
+            }
+
+
+mount_spa_routes(app, FRONTEND_DIST)
