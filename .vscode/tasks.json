@@ -44,8 +44,19 @@
       ]
     },
     {
+      "label": "dev:observability",
+      "type": "shell",
+      "command": "$dd='C:\\Users\\anileshw\\AppData\\Local\\Programs\\DockerDesktop\\Docker Desktop.exe'; if (-not (docker info 2>$null)) { Start-Process $dd; $t=0; while ($t -lt 120 -and (docker info 2>$null) -eq $null) { Start-Sleep 5; $t+=5 } }; Set-Location '${workspaceFolder}/deploy/observability'; docker compose up -d; docker compose ps",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
       "label": "dev:all",
       "dependsOn": [
+        "dev:observability",
         "dev:backend",
         "dev:frontend"
       ],

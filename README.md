@@ -254,17 +254,23 @@ Runs on <http://localhost:5173> and proxies `/api` + `/mcp` to `http://localhost
 
 ### One-step startup in VS Code
 
-Use the compound task `dev:all` to start backend and frontend together.
+Use the compound task `dev:all` to start everything together: backend, frontend, Docker, Grafana, and Prometheus.
 
-1. Open the Command Palette and run `Tasks: Run Task`.
+1. Open the Command Palette (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>) and run `Tasks: Run Task`.
 2. Select `dev:all`.
 
-This launches:
+This launches in parallel:
 
-- `uv run autochart-api` in the repo root
-- `npm run dev` in `frontend/`
+| Service | Command | URL |
+|---------|---------|-----|
+| Backend API | `uv run autochart-api` | http://127.0.0.1:8000 |
+| Frontend dev | `npx vite --host 127.0.0.1 --port 5173` | http://127.0.0.1:5173 |
+| Docker (Grafana) | Auto-starts Docker Desktop, runs `docker compose up -d` | http://127.0.0.1:3000 |
+| Prometheus | Part of docker compose | http://127.0.0.1:9090 |
 
-Use `Tasks: Terminate Task` to stop either long-running process.
+**To stop everything:** Command Palette → `Tasks: Terminate Task` → `dev:all`.
+
+**Note:** Docker Desktop must be running. To auto-start on login: Docker Desktop → Settings → General → ✅ *Start Docker Desktop when you sign in to your computer*.
 
 ## Behind a reverse proxy
 
