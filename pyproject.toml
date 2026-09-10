@@ -12,6 +12,7 @@ dependencies = [
     "fastapi>=0.116.1",
     "geodatasets>=2026.5.1",
     "geopandas>=1.1.4",
+    "httpx>=0.28.1",
     "matplotlib>=3.11.1",
     "opentelemetry-api>=1.44.0",
     "opentelemetry-exporter-otlp-proto-http>=1.44.0",
@@ -35,7 +36,6 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "ipykernel>=7.3.0",
     "jupyter>=1.1.1",
     "mypy>=2.3.0",
