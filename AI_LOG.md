@@ -2,264 +2,31 @@
 
 This file tracks code and configuration changes made by AI in this repository.
 
-## 2026-08-10 (Report cleanup pass: figure numbering 0-10 + content consistency)
-
-### Timestamp
-- 2026-08-10 11:40:34 +01:00
+## 2026-09-23 (Rate limiting for chat and MCP endpoints)
 
 ### Summary
-- Resolved all reported report issues in one pass.
-- Normalized figure references and index to a strict `Figure 0` to `Figure 10` scheme.
-- Fixed heading-number gap in Chapter 7 and corrected mismatched section title/content in Chapter 8.
-- Corrected grammar and pronoun consistency in Acknowledgements and Project Delivery text.
-
-### Updated Files
-- docs/graduation-report.md
-  - Updated List of Figures to match in-text figure captions and numbering.
-  - Renumbered figure captions in body content for architecture/RAID/observability and screenshots.
-  - Changed `7.6 Docker, docker-compose, and CI/CD Delivery` to `7.5 ...`.
-  - Renamed `8.3` section to align with actual Grafana content.
-  - Improved wording and corrected typos in added narrative text.
-
-### Why Changed
-- User requested all identified review issues to be fixed and confirmed figure numbering preference (`0` to `10`).
-
-### Validation
-- Markdown diagnostics check passed with no file errors.
-
-### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
-
-## 2026-08-10 (Report update: TOC sync + UKHO design system references)
-
-### Timestamp
-- 2026-08-10 11:18:02 +01:00
-
-### Summary
-- Rechecked and synchronised the graduation report table of contents against current chapter headings.
-- Added explicit chapter text describing UKHO design-system and CSS-policy alignment in frontend styling decisions.
-- Added missing references for Admiralty Design System, UKHO CSS Coding Standards, and UKHO Front End Policy.
-
-### Updated Files
-- docs/graduation-report.md
-  - Added `3.11 UKHO Design System and CSS Policy Alignment`.
-  - Expanded references list with UKHO policy/design-system sources.
-
-### Why Changed
-- User identified missing design-system/policy reference coverage after report edits.
-
-### Validation
-- Verified chapter headings and contents alignment.
-- Markdown diagnostics check passed after update.
-
-### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
-
-## 2026-08-10 (Report restructure: new Project Delivery chapter with slide snapshots)
-
-### Timestamp
-- 2026-08-10 11:04:08 +01:00
-
-### Summary
-- Converted the former "Alignment with Project Presentation Evidence" subsection into a standalone chapter: **Project Delivery**.
-- Added two slide-based delivery snapshots (Slide 10 deployment and Slide 11 delivery outcomes) to support chapter evidence.
-- Renumbered subsequent chapters and updated table of contents and figure index accordingly.
-
-### Updated Files
-- docs/graduation-report.md
-  - Added `Chapter 8: Project Delivery`.
-  - Added Figure 7 and Figure 8 image embeds using new assets.
-  - Shifted chapter numbering:
-    - Conclusion -> Chapter 9
-    - References -> Chapter 10
-    - Appendices -> Chapter 11
-  - Updated appendix mapping references to new chapter numbers.
-- docs/assets/figures/slide10-project-delivery.png
-- docs/assets/figures/slide11-project-delivery.png
-
-### Why Changed
-- User requested promotion of the alignment subsection to a new chapter and inclusion of project-delivery screenshots from Slides 10 and 11.
-
-### Validation
-- Verified chapter headings, table of contents, and figure references after renumbering.
-
-### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
-
-## 2026-08-10 (Report completion: Docker, docker-compose, CI/CD coverage)
-
-### Timestamp
-- 2026-08-10 11:04:08 +01:00
-
-### Summary
-- Added explicit graduation-report coverage for Docker, docker-compose, and CI/CD work already delivered in the project.
-- Added a dedicated subsection in Chapter 7 and a new evidence table for containerisation and pipeline delivery.
-- Updated appendix compliance snapshot to reflect these operational delivery artefacts.
-
-### Updated Files
-- docs/graduation-report.md
-  - Added `7.6 Docker, docker-compose, and CI/CD Delivery`.
-  - Added **Table 9**: Containerisation and CI/CD delivery evidence.
-  - Updated List of Tables to include Table 9.
-  - Updated Appendix C to explicitly include container and CI/CD coverage.
-
-### Why Changed
-- User identified missing explicit documentation of Docker, docker-compose, and CI/CD tasks in the report.
-
-### Validation
-- Markdown diagnostics check completed after updates (no file errors).
-
-### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
-
-## 2026-08-10 (Report structure reorder per reviewer request)
-
-### Timestamp
-- 2026-08-10 10:03:28 +01:00
-
-### Summary
-- Reordered graduation report chapters per user review comments.
-- Moved Business Case content to Chapter 2.
-- Moved RAID and REST/MCP/Observability chapters to appear before Conclusion.
-- Updated chapter numbering and table of contents accordingly.
-
-### Updated Files
-- docs/graduation-report.md
-  - New chapter order:
-    1. Introduction
-    2. Business Case
-    3. Architecture
-    4. Methodology
-    5. Data Handling
-    6. RAID Register for Graduation Governance
-    7. REST API, MCP, and Observability Delivery
-    8. Conclusion
-    9. References
-    10. Appendices
-
-### Why Changed
-- User requested chapter order changes for submission flow and readability.
-
-### Validation
-- Verified all chapter headings are present and in requested order.
-
-### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
-
-## 2026-08-10 (Attachment-driven report revision: PPTX alignment + images)
-
-### Timestamp
-- 2026-08-10 09:36:53 +01:00
-
-### Summary
-- Reviewed the attached presentation (`AutoChart_Overview final_copy.pptx`) and extracted slide themes to cross-check report coverage.
-- Added concrete images to the graduation report using available project assets.
-- Modified Chapter 8 to explicitly align report narrative with the presentation evidence.
-
-### Updated Files
-- docs/graduation-report.md
-  - Added image on title page using UKHO logo asset.
-  - Added presentation thumbnail image and new subsection: "8.5 Alignment with Project Presentation Evidence".
-  - Added Appendix F mapping presentation themes to report chapters.
-- docs/assets/figures/pptx-overview-thumbnail.jpeg
-  - Added extracted presentation thumbnail image for report embedding.
-- docs/assets/figures/ukho-logo.svg
-  - Added copied project logo asset for report embedding.
-
-### Why Changed
-- User requested that the attached presentation be considered and that images and section modifications be included in the graduation report.
-
-### Validation
-- Confirmed markdown diagnostics for updated files showed no errors.
-
-### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
-
-## 2026-08-10 (Report gap closure: Observability, MCP, REST API coverage)
-
-### Timestamp
-- 2026-08-10 09:36:53 +01:00
-
-### Summary
-- Addressed a documented content gap in the graduation report where Observability, MCP, and REST API delivery detail was not explicit enough.
-- Added a dedicated chapter covering architecture, delivery evidence, and validation outcomes for these three workstreams.
-- Updated figure and table indices to include new governance-quality evidence artefacts.
-
-### Updated Files
-- docs/graduation-report.md
-  - Added explicit Chapter 8: REST API, MCP, and Observability Delivery.
-  - Added sections for:
-    - REST API contract and endpoint delivery evidence.
-    - MCP tooling architecture and JSON-RPC validation evidence.
-    - Observability signal pipeline and operational outcomes.
-  - Added Figure 5 (observability pipeline) and Tables 6-8 (REST/MCP/observability evidence).
-  - Updated chapter numbering to keep references and appendices aligned.
-
-### Why Changed
-- User reported missing coverage for observability and interface-delivery work in the report.
-
-### Validation
-- Markdown diagnostics check completed after edits (no file errors).
-
-### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
-
-## 2026-08-10 (Documentation completeness pass: AI log, RAID alignment, report reformat)
-
-### Timestamp
-- 2026-08-10 09:25:46 +01:00
-
-### Summary
-- Reviewed AI and RAID logs for completeness and consistency with project documentation policy.
-- Added a full documentation-change log entry with explicit reason, scope, and validation.
-- Reformatted the graduation report for missing submission areas and added a dedicated RAID section.
-
-### Updated Files
-- AI_LOG.md
-  - Added this completion entry to capture the follow-up documentation work and audit trace.
-- RAID_LOG.md
-  - Updated header metadata and appended RAID records related to graduation-report governance.
-- docs/graduation-report.md
-  - Reworked front matter and chapter structure for clearer graduation-report readability.
-  - Added an explicit RAID chapter section with tabled risks, assumptions, issues, and dependencies.
-  - Expanded references and appendices formatting for submission clarity.
-
-### Why Changed
-- User identified missing/incomplete documentation coverage in logs and report layout.
-- This pass closes traceability gaps between deliverable artefacts and governance records.
-
-### Validation
-- Checked markdown diagnostics for modified documentation files (no errors).
-
-### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
-
-## 2026-08-10 (Graduation report authoring)
-
-### Summary
-- Authored a complete graduation report document in UK English with a professional academic tone.
-- Included requested rhetorical devices (simile, metaphor, irony, alliteration) within appropriate narrative sections.
-- Structured the report with title page, acknowledgements, abstract, contents, list of figures/tables, required chapters, references, and appendices.
+- Mitigated the unbounded-consumption/DoS risk on the expensive `/api/chat` and `/mcp` routes.
 
 ### Added Files
-- docs/graduation-report.md
-  - Contains chapters:
-    - Introduction
-    - Architecture
-    - Methodology
-    - Data Handling
-    - Business Case
-    - Conclusion
-  - Includes Mermaid-based figures and tabular summaries for requirements, technology, business impact, and risk posture.
+- `src/autochart/backend/rate_limit.py` — thread-safe sliding-window limiter keyed by client IP.
+
+### Updated Files
+- `src/autochart/backend/config.py` — added `AUTOCHART_RATE_LIMIT_REQUESTS` (default 60) and `AUTOCHART_RATE_LIMIT_WINDOW_SECONDS` (default 60).
+- `src/autochart/backend/main.py` — applies the limiter to `/api/chat`, `/api/v1/chat`, and `/mcp`; rejected requests receive HTTP 429 and `Retry-After`.
+- `tests/test_security.py` — covers enforcement across chat/MCP and confirms forwarded headers cannot bypass the IP key.
+- `.env.example` — documents the rate-limit settings for deployment configuration.
+- `RAID_LOG.md` — added R-011 for unbounded chat/MCP consumption and marked it mitigated.
 
 ### Validation
-- Checked markdown file diagnostics in-editor (no file errors).
+- `uv run pytest tests/test_security.py`
+- `uv run ruff check src tests`
+- `uv run mypy`
 
-### Why Changed
-- To satisfy the graduation deliverable request for a complete, structured project report suitable for submission.
+### Notes
+- This is an in-process limiter suitable for the current single-process deployment. Multi-instance production deployments should enforce the same policy at a shared gateway or store counters in a shared backend.
 
 ### Changed By
-- GitHub Copilot (GPT-5.3-Codex)
+- GitHub Copilot
 
 ## 2026-08-07 (SPA security tests + CI security gate)
 

@@ -1,7 +1,7 @@
 # RAID Log
 
 Project: AutoChart
-Last Updated: 2026-08-10
+Last Updated: 2026-09-23
 Owner: Engineering Team
 
 This document tracks Risks, Assumptions, Issues, and Dependencies for project delivery.
@@ -17,6 +17,7 @@ This document tracks Risks, Assumptions, Issues, and Dependencies for project de
 
 | ID | Date Raised | Risk Description | Impact | Likelihood | Mitigation Plan | Owner | Status | Last Reviewed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| R-011 | 2026-09-23 | Unbounded requests to `/mcp` or `/api/chat` could exhaust CPU and memory through repeated geospatial lookups, plotting, or JSON-RPC calls. | High | Medium | Add configurable sliding-window IP rate limiting with `429`/`Retry-After`, cover both endpoints with tests, and document deployment limits for multi-instance production. | Backend Lead | Mitigated | 2026-09-23 |
 | R-010 | 2026-08-10 | Graduation report may diverge from evolving implementation details if documentation is not refreshed before submission freeze. | Medium | Medium | Tie report references to living artefacts (README, ADRs, architecture), and run a final documentation parity review before hand-in. | Project Lead | Monitoring | 2026-08-10 |
 | R-009 | 2026-08-07 | SPA catch-all route could be flagged for traversal if it serves user-derived paths from dist. | High | Medium | Harden fallback to index-only + top-level allowlist, add dedicated SPA traversal tests, keep no scanner suppression. | Backend Lead | Mitigated | 2026-08-07 |
 | R-008 | 2026-08-06 | Reverse-proxy (`/proxy/<port>/`) usage in the dev VM makes any absolute path break assets/fetches. | Medium | High | Vite `base: "./"`, path-relative fetches, and a custom `/docs` route. Documented in README. | Frontend Lead | Mitigated | 2026-08-06 |

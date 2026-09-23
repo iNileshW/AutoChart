@@ -21,6 +21,9 @@ API_KEY_HEADER: str = os.getenv("AUTOCHART_API_KEY_HEADER", "X-API-Key")
 LOG_LEVEL: str = os.getenv("AUTOCHART_LOG_LEVEL", "INFO").upper()
 LOG_JSON: bool = os.getenv("AUTOCHART_LOG_JSON", "1").lower() in {"1", "true", "yes"}
 
+RATE_LIMIT_REQUESTS: int = int(os.getenv("AUTOCHART_RATE_LIMIT_REQUESTS", "60"))
+RATE_LIMIT_WINDOW_SECONDS: int = int(os.getenv("AUTOCHART_RATE_LIMIT_WINDOW_SECONDS", "60"))
+
 # Observability toggles. Metrics default to on (opt-out via AUTOCHART_METRICS=0);
 # tracing and Sentry are opt-in via their respective environment variables.
 METRICS_ENABLED: bool = os.getenv("AUTOCHART_METRICS", "1").lower() in {"1", "true", "yes"}

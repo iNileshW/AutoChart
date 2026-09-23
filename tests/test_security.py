@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from autochart.backend import config
-from autochart.backend.main import app
+from autochart.backend.main import app, rate_limiter
 
 
 @pytest.fixture()
@@ -52,3 +52,35 @@ def test_request_id_header_present(client: TestClient) -> None:
 def test_request_id_echoed_when_supplied(client: TestClient) -> None:
     r = client.get("/api/health", headers={"X-Request-ID": "abc-123"})
     assert r.headers.get("X-Request-ID") == "abc-123"
+
+
+def test_rate_limit_applies_to_chat_and_mcp(monkeypatch) -> None:
+    monkeypatch.setattr(rate_limiter, "limit", 1)
+    monkeypatch.setattr(rate_limiter, "window_seconds", 60)
+    rate_limiter.clear()
+    try:
+        with TestClient(app) as client:
+            first = client.post("/api/chat", json={"message": "2345"})
+            second = client.post("/mcp", json={"method": "initialize", "id": 1})
+            assert first.status_code == 200
+            assert second.status_code == 429
+            assert second.headers["Retry-After"].isdigit()
+    finally:
+        rate_limiter.clear()
+
+
+def test_rate_limit_is_scoped_by_client_ip(monkeypatch) -> None:
+    monkeypatch.setattr(rate_limiter, "limit", 1)
+    rate_limiter.clear()
+    try:
+        with TestClient(app) as client:
+            first = client.post("/api/chat", json={"message": "2345"})
+            second = client.post(
+                "/api/chat",
+                json={"message": "2345"},
+                headers={"X-Forwarded-For": "203.0.113.10"},
+            )
+            assert first.status_code == 200
+            assert second.status_code == 429
+    finally:
+        rate_limiter.clear()

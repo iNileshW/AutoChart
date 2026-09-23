@@ -12,13 +12,18 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from autochart.backend.api.routes import router as api_router
-from autochart.backend.config import ALLOWED_ORIGINS
+from autochart.backend.config import (
+    ALLOWED_ORIGINS,
+    RATE_LIMIT_REQUESTS,
+    RATE_LIMIT_WINDOW_SECONDS,
+)
 from autochart.backend.grafana_proxy import is_enabled as grafana_enabled
 from autochart.backend.grafana_proxy import router as grafana_router
 from autochart.backend.logging_setup import get_logger
 from autochart.backend.mcp_server import router as mcp_router
 from autochart.backend.observability import install as install_observability
 from autochart.backend.observability import log_web_vital
+from autochart.backend.rate_limit import SlidingWindowRateLimiter
 from autochart.backend.security import api_key_middleware
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -26,6 +31,9 @@ FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
 PRESENTATION_DIR = REPO_ROOT / "docs" / "presentation"
 
 log = get_logger("autochart.http")
+
+RATE_LIMITED_PATHS = {"/api/chat", "/api/v1/chat", "/mcp"}
+rate_limiter = SlidingWindowRateLimiter(RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS)
 
 app = FastAPI(
     title="AutoChart Backend",
@@ -56,6 +64,23 @@ async def request_context(request: Request, call_next):
 
 app.middleware("http")(api_key_middleware)
 app.middleware("http")(request_context)
+
+
+async def rate_limit_requests(request: Request, call_next):
+    if request.url.path in RATE_LIMITED_PATHS:
+        client_host = request.client.host if request.client else "unknown"
+        allowed, retry_after = rate_limiter.check(client_host)
+        if not allowed:
+            return Response(
+                content='{"detail":"Rate limit exceeded"}',
+                status_code=429,
+                media_type="application/json",
+                headers={"Retry-After": str(retry_after)},
+            )
+    return await call_next(request)
+
+
+app.middleware("http")(rate_limit_requests)
 
 
 @app.get("/docs", include_in_schema=False, response_model=None)
